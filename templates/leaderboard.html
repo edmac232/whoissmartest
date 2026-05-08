@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %} &mdash; Leaderboard{% endblock %}
+
+{% block content %}
+<div id="content">
+
+  <div id="leaderboard-title">Rankings</div>
+
+  {% if persons %}
+  <table id="leaderboard-table">
+    <tr>
+      <th>#</th>
+      <th>Photo</th>
+      <th>Name</th>
+      <th>Elo</th>
+      <th>Wins</th>
+      <th>Losses</th>
+      <th>W/L</th>
+    </tr>
+    {% for p in persons %}
+    <tr>
+      <td class="lb-rank">{{ loop.index }}</td>
+      <td>
+        <img class="lb-thumb"
+             src="{{ url_for('static', filename=p.photo_path) }}"
+             alt="{{ p.name }}">
+      </td>
+      <td class="lb-name">{{ p.name }}</td>
+      <td class="lb-elo">{{ p.elo | int }}</td>
+      <td class="lb-wins">{{ p.wins }}</td>
+      <td class="lb-losses">{{ p.losses }}</td>
+      <td style="color:#666666; font-size:11px;">
+        {% if p.losses > 0 %}
+          {{ "%.2f" | format(p.wins / p.losses) }}
+        {% else %}
+          &mdash;
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p style="color:#666666; padding:20px 0;">No one here yet.</p>
+  {% endif %}
+
+</div>
+{% endblock %}

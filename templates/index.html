@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %} &mdash; Who's Hotter?{% endblock %}
+
+{% block content %}
+
+  {% if person_a and person_b %}
+
+  <p id="vote-prompt">Who's Hotter? Click to Choose.</p>
+
+  <table id="vote-table">
+    <tr>
+
+      <!-- Person A -->
+      <td>
+        <form method="POST" action="{{ url_for('vote') }}">
+          <input type="hidden" name="winner_id" value="{{ person_a.id }}">
+          <input type="hidden" name="loser_id"  value="{{ person_b.id }}">
+          <button class="vote-photo-btn" type="submit">
+            <img src="{{ url_for('static', filename=person_a.photo_path) }}"
+                 alt="{{ person_a.name }}">
+          </button>
+          <div class="person-name">{{ person_a.name }}</div>
+          <div class="person-stats">
+            Elo: {{ person_a.elo | int }} &nbsp;&bull;&nbsp;
+            {{ person_a.wins }}W / {{ person_a.losses }}L
+          </div>
+        </form>
+      </td>
+
+      <!-- OR -->
+      <td class="or-cell">OR</td>
+
+      <!-- Person B -->
+      <td>
+        <form method="POST" action="{{ url_for('vote') }}">
+          <input type="hidden" name="winner_id" value="{{ person_b.id }}">
+          <input type="hidden" name="loser_id"  value="{{ person_a.id }}">
+          <button class="vote-photo-btn" type="submit">
+            <img src="{{ url_for('static', filename=person_b.photo_path) }}"
+                 alt="{{ person_b.name }}">
+          </button>
+          <div class="person-name">{{ person_b.name }}</div>
+          <div class="person-stats">
+            Elo: {{ person_b.elo | int }} &nbsp;&bull;&nbsp;
+            {{ person_b.wins }}W / {{ person_b.losses }}L
+          </div>
+        </form>
+      </td>
+
+    </tr>
+  </table>
+
+  {% else %}
+
+  <div id="no-photos">
+    <p>No photos yet. <a href="{{ url_for('login') }}">Add some</a> to get started.</p>
+  </div>
+
+  {% endif %}
+
+{% endblock %}
