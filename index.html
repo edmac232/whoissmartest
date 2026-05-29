@@ -109,19 +109,16 @@
   <!-- Header -->
   <div id="header">
     <h1>Whoissmartest</h1>
-    <div id="header-nav">
-      <a onclick="switchTab('vote')" id="nav-vote" class="active">Vote</a> &middot;
-      <a onclick="switchTab('leaderboard')" id="nav-leaderboard">Leaderboard</a> &middot;
+    <div id="header-nav" style="display: flex; justify-content: center; gap: 48px;">
+      <a onclick="switchTab('vote')" id="nav-vote" class="active">Vote</a>
+      <a onclick="switchTab('leaderboard')" id="nav-leaderboard">Leaderboard</a>
       <a onclick="switchTab('admin')" id="nav-admin">Admin</a>
     </div>
   </div>
 
   <!-- Subheader -->
-  <div id="subheader" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 20px;">
-    <span style="flex-grow: 1; text-align: center;">Were we let in for our minds? Yes. Will we be judged on them? Yes.</span>
-    <span id="db-status-badge" style="font-family: 'Fira Code', monospace; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px; background: rgba(223, 215, 195, 0.08); color: #dfd7c3; border: 1px solid rgba(223, 215, 195, 0.2); user-select: none;">
-      Checking...
-    </span>
+  <div id="subheader">
+    Were we let in for our minds? Yes. Will we be judged on them? Yes.
   </div>
 
   <!-- Content Containers -->
@@ -130,7 +127,7 @@
     <!-- TAB: VOTE -->
     <div id="tab-vote" class="tab-content active">
       <div id="vote-game-container">
-        <p id="vote-prompt">Who's Smarter? Click to choose or use arrow keys.</p>
+        <p id="vote-prompt">Who's Smarter?</p>
 
         <table id="vote-table">
           <tr id="matchup-row">
@@ -271,7 +268,7 @@
 
   <!-- Footer -->
   <div id="footer">
-    Whoissmartest &copy; 2026 &middot; Deciphering Intellectual Giants
+    Whoissmartest &copy; 2026
   </div>
 
 </div>
@@ -476,23 +473,8 @@ function playChalkSound(type = 'click') {
 // ============================================================================
 // Text to Speech
 // ============================================================================
-let speechTimeout = null;
 function speakMatchup(nameA, nameB) {
-  if (speechTimeout) {
-    clearTimeout(speechTimeout);
-  }
-
-  // Brief delay to allow card loading/sound before starting speech
-  speechTimeout = setTimeout(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const text = `${nameA} versus ${nameB}`;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.95; // elegant, scholarly pace
-      utterance.pitch = 1.0;
-      window.speechSynthesis.speak(utterance);
-    }
-  }, 250);
+  // Speech synthesis disabled by request, keeping click left/right keys and click listeners fully intact
 }
 
 function cancelSpeech() {
@@ -1031,7 +1013,5 @@ async function resetToDefaults() {
 // ============================================================================
 initDatabase();
 </script>
-
 </body>
-</html>dy>
 </html>
