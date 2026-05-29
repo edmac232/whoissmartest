@@ -379,6 +379,7 @@ async function initDatabase() {
       badge.style.background = "rgba(239, 68, 68, 0.08)";
       badge.style.color = "#fca5a5";
       badge.style.borderColor = "rgba(239, 68, 68, 0.25)";
+      badge.style.display = "inline-block";
     }
   } else {
     try {
@@ -391,12 +392,9 @@ async function initDatabase() {
       minds = await response.json();
       isSharedDb = true;
       
-      // Update premium UI badge to show Global Database state if it exists
+      // Hiding status badge per request
       if (badge) {
-        badge.textContent = "🌐 Connected to Global Leaderboard";
-        badge.style.background = "rgba(74, 222, 128, 0.06)";
-        badge.style.color = "#86efac";
-        badge.style.borderColor = "rgba(74, 222, 128, 0.2)";
+        badge.style.display = "none";
       }
     } catch (error) {
       console.warn("Could not connect to shared database. Falling back to local browser storage:", error);
@@ -415,12 +413,9 @@ async function initDatabase() {
         loadLocalDefaults();
       }
 
-      // Update premium UI badge to show Local Storage state if it exists
+      // Hiding status badge per request
       if (badge) {
-        badge.textContent = "💾 Local Browser Storage (Offline)";
-        badge.style.background = "rgba(223, 215, 195, 0.06)";
-        badge.style.color = "#dfd7c3";
-        badge.style.borderColor = "rgba(223, 215, 195, 0.2)";
+        badge.style.display = "none";
       }
     }
   }
@@ -715,7 +710,15 @@ window.addEventListener('keydown', triggerFirstSpeech);
 // ============================================================================
 function renderLeaderboard() {
   const container = document.getElementById("leaderboard-container");
-  const searchQuery = document.getElementById("search-input").value.toLowerCase().trim();
+  if (!container) return;
+
+  const searchInput = document.getElementById("search-input");
+  const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+  if (!minds || !Array.isArray(minds) || minds.length === 0) {
+    container.innerHTML = '<p style="color:#94a3b8; padding:30px 0; text-align:center;">No minds in the database yet.</p>';
+    return;
+  }
 
   // Sort minds by Elo descending
   const sorted = [...minds].sort((a, b) => b.elo - a.elo);
@@ -802,6 +805,20 @@ async function handleSuggest(e) {
 
   if (!name) return;
 
+  if (!isSharedDb) {
+    // Local storage fallback for local/offline testing
+    const localSugs = JSON.parse(localStorage.getItem("whoissmartest_suggestions") || "[]");
+    localSugs.push({ name, details, date: new Date().toISOString() });
+    localStorage.setItem("whoissmartest_suggestions", JSON.stringify(localSugs));
+
+    playChalkSound('click');
+    nameInput.value = "";
+    detailsInput.value = "";
+    msgOk.textContent = `Thank you! Your suggestion for "${name}" has been saved locally in your browser sandbox.`;
+    msgOk.style.display = "block";
+    return;
+  }
+
   try {
     const response = await fetch("/api/suggest", {
       method: "POST",
@@ -821,8 +838,17 @@ async function handleSuggest(e) {
     msgOk.textContent = `Thank you! Your suggestion for "${name}" has been recorded.`;
     msgOk.style.display = "block";
   } catch (err) {
-    msgErr.textContent = err.message;
-    msgErr.style.display = "block";
+    console.warn("API suggest failed, saving locally instead:", err);
+    
+    const localSugs = JSON.parse(localStorage.getItem("whoissmartest_suggestions") || "[]");
+    localSugs.push({ name, details, date: new Date().toISOString() });
+    localStorage.setItem("whoissmartest_suggestions", JSON.stringify(localSugs));
+
+    playChalkSound('click');
+    nameInput.value = "";
+    detailsInput.value = "";
+    msgOk.textContent = `Thank you! Your suggestion for "${name}" has been saved locally in your browser sandbox.`;
+    msgOk.style.display = "block";
   }
 }
 
@@ -835,9 +861,15 @@ function renderAdminPanel() {
 
 function renderAdminMindsList() {
   const container = document.getElementById("minds-list-container");
-  document.getElementById("minds-count-title").textContent = `All Photos (${minds.length})`;
+  if (!container) return;
 
-  if (minds.length === 0) {
+  const mindsCountTitle = document.getElementById("minds-count-title");
+  const listLength = (minds && Array.isArray(minds)) ? minds.length : 0;
+  if (mindsCountTitle) {
+    mindsCountTitle.textContent = `All Photos (${listLength})`;
+  }
+
+  if (!minds || !Array.isArray(minds) || minds.length === 0) {
     container.innerHTML = '<p style="color:#94a3b8; text-align:center; padding: 20px 0;">No minds registered yet.</p>';
     return;
   }
