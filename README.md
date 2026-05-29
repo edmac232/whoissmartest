@@ -1,6 +1,6 @@
 # Whoissmartest
 
-A recreation of Mark Zuckerberg's 2003 Facemash website, styled after its appearance in *The Social Network*. Upload photos, vote on side-by-side matchups, and watch Elo ratings update in real time.
+Sort of like facemash, but for smart people.
 
 ---
 
