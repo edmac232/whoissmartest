@@ -1,4 +1,4 @@
-# ChemE FaceMash
+# Whoissmartest
 
 A recreation of Mark Zuckerberg's 2003 Facemash website, styled after its appearance in *The Social Network*. Upload photos, vote on side-by-side matchups, and watch Elo ratings update in real time.
 
@@ -7,7 +7,7 @@ A recreation of Mark Zuckerberg's 2003 Facemash website, styled after its appear
 ## Project Tree
 
 ```
-facemash/
+whoissmartest/
 ├── app.py                  # Flask app — all routes, Elo logic, DB setup
 ├── requirements.txt        # Python dependencies (flask)
 ├── static/
@@ -28,8 +28,8 @@ facemash/
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/km-kushmathur/cheme-facemash.git
-cd cheme-facemash
+git clone https://github.com/edmac232/whoissmartest.git
+cd whoissmartest
 ```
 
 ### 2. Create and activate a virtual environment
@@ -58,7 +58,7 @@ The app runs at **http://localhost:5000**. Open that URL in your Windows browser
 ## Uploading Photos
 
 1. Go to **http://localhost:5000/admin** and log in.  
-   Default password: `facemash`  
+   Default password: `whoissmartest`  
    *(set the `ADMIN_PASSWORD` environment variable to change it)*
 
 2. On the **Upload** page:
