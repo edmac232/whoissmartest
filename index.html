@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whoissmartest — Who's Smarter?</title>
+  <link rel="stylesheet" type="text/css" href="static/style.css">
+  <style>
+    /* Styling adjustments for single-page app tabs and layout */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    #header-nav a {
+      cursor: pointer;
+    }
+    #header-nav a.active {
+      color: #dfd7c3;
+      border-bottom: 2px solid #dfd7c3;
+      padding-bottom: 2px;
+    }
+    .vote-photo-btn {
+      width: 100%;
+      height: 270px;
+      overflow: hidden;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: #121314;
+    }
+    .vote-photo-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.88);
+      transition: filter 0.2s ease;
+    }
+    /* Add search filter to leaderboard */
+    .leaderboard-search {
+      width: 100%;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .leaderboard-search input {
+      width: 100%;
+      background: #18191b;
+      border: 1px solid rgba(223, 215, 195, 0.15);
+      border-radius: 6px;
+      color: #ffffff;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .leaderboard-search input:focus {
+      outline: none;
+      border-color: #dfd7c3;
+      background: #1e2022;
+    }
+    /* Instruction box for local developer workflow */
+    .dev-instructions {
+      margin-top: 24px;
+      background: rgba(223, 215, 195, 0.03);
+      border: 1px dashed rgba(223, 215, 195, 0.2);
+      border-radius: 6px;
+      padding: 16px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .dev-instructions h4 {
+      color: #dfd7c3;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .dev-instructions ol {
+      margin-left: 18px;
+      line-height: 1.6;
+    }
+    .dev-instructions code {
+      font-family: 'Fira Code', monospace;
+      background: #121314;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+      color: #fca5a5;
+    }
+    /* Transition fade animations for voting card swap */
+    .fade-out {
+      opacity: 0;
+      transform: scale(0.95);
+      transition: all 0.2s ease-out;
+    }
+    .fade-in {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    .fade-in-active {
+      opacity: 1;
+      transform: scale(1);
+      transition: all 0.2s ease-out;
+    }
+  </style>
+</head>
+<body>
+
+<div id="shell">
+
+  <!-- Header -->
+  <div id="header">
+    <h1>Whoissmartest</h1>
+    <div id="header-nav">
+      <a onclick="switchTab('vote')" id="nav-vote" class="active">Vote</a> &middot;
+      <a onclick="switchTab('leaderboard')" id="nav-leaderboard">Leaderboard</a> &middot;
+      <a onclick="switchTab('admin')" id="nav-admin">Admin</a>
+    </div>
+  </div>
+
+  <!-- Subheader -->
+  <div id="subheader">
+    Were we let in for our minds? Yes. Will we be judged on them? Yes.
+  </div>
+
+  <!-- Content Containers -->
+  <div id="content">
+
+    <!-- TAB: VOTE -->
+    <div id="tab-vote" class="tab-content active">
+      <div id="vote-game-container">
+        <p id="vote-prompt">Who's Smarter? Click to choose or use arrow keys.</p>
+
+        <table id="vote-table">
+          <tr id="matchup-row">
+            <!-- Person A -->
+            <td>
+              <div class="vote-candidate-card" id="card-a">
+                <button class="vote-photo-btn" onclick="submitVote('A')">
+                  <img id="photo-a" src="" alt="Candidate A">
+                </button>
+                <div class="person-name" id="name-a">...</div>
+                <div class="person-stats">
+                  <span class="stat-elo" id="elo-a">Elo ...</span> &bull;
+                  <span id="wins-a">...W</span> &bull;
+                  <span id="losses-a">...L</span>
+                </div>
+                <div class="keyboard-hint"><kbd>←</kbd> Press Left Arrow</div>
+              </div>
+            </td>
+
+            <!-- VS -->
+            <td class="or-cell">VS</td>
+
+            <!-- Person B -->
+            <td>
+              <div class="vote-candidate-card" id="card-b">
+                <button class="vote-photo-btn" onclick="submitVote('B')">
+                  <img id="photo-b" src="" alt="Candidate B">
+                </button>
+                <div class="person-name" id="name-b">...</div>
+                <div class="person-stats">
+                  <span class="stat-elo" id="elo-b">Elo ...</span> &bull;
+                  <span id="wins-b">...W</span> &bull;
+                  <span id="losses-b">...L</span>
+                </div>
+                <div class="keyboard-hint"><kbd>→</kbd> Press Right Arrow</div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      
+      <div id="no-photos" style="display:none;">
+        <p>No minds in the database yet. Click on the <strong>Admin</strong> tab to load defaults or add your own.</p>
+      </div>
+    </div>
+
+    <!-- TAB: LEADERBOARD -->
+    <div id="tab-leaderboard" class="tab-content">
+      <div id="leaderboard-title">Mind Rankings</div>
+      
+      <div class="leaderboard-search">
+        <input type="text" id="search-input" placeholder="Search minds..." oninput="renderLeaderboard()">
+      </div>
+
+      <div id="leaderboard-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- TAB: ADMIN -->
+    <div id="tab-admin" class="tab-content">
+      <!-- Admin Login -->
+      <div id="admin-login-box" style="display:block;">
+        <div id="form-box">
+          <h2>Admin Login</h2>
+          <p class="msg-err" id="login-error" style="display:none;"></p>
+          <form onsubmit="handleLogin(event)">
+            <div class="field">
+              <label>Password</label>
+              <input type="password" id="admin-password" autofocus>
+            </div>
+            <button class="btn" type="submit">Login</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Admin Panel Dashboard -->
+      <div id="admin-panel" style="display:none;">
+        <div id="form-box" style="margin-bottom: 24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(223, 215, 195, 0.2); padding-bottom:8px; margin-bottom:18px;">
+            <h2 style="border-bottom:none; margin-bottom:0; padding-bottom:0;">Admin Console</h2>
+            <button class="btn-small" onclick="handleLogout()">Logout</button>
+          </div>
+
+          <p class="msg-ok" id="admin-message" style="display:none;"></p>
+          <p class="msg-err" id="admin-error" style="display:none;"></p>
+
+          <!-- Add custom candidate locally -->
+          <form onsubmit="handleAddMind(event)">
+            <h3 style="color:#dfd7c3; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Add Custom Mind (Local Browser)</h3>
+            <div class="field">
+              <label>Name</label>
+              <input type="text" id="add-name" required>
+            </div>
+            <div class="field">
+              <label>Photo</label>
+              <input type="file" id="add-photo" accept="image/*" required>
+              <small>Select an image to represent this mind.</small>
+            </div>
+            <button class="btn" type="submit">Add Mind</button>
+          </form>
+        </div>
+
+        <!-- Preloaded & Custom List Manage -->
+        <div id="upload-list">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom: 1px solid rgba(223, 215, 195, 0.2); padding-bottom: 6px;">
+            <h3 style="border-bottom:none; margin-bottom:0; padding-bottom:0; color:#dfd7c3; font-size:14px; font-weight:600;" id="minds-count-title">All Minds</h3>
+            <div style="display:flex; gap: 8px;">
+              <button class="btn-small" onclick="resetToDefaults()" style="background-color:rgba(223, 215, 195, 0.08); color:#dfd7c3; border-color:rgba(223, 215, 195, 0.25);">Reset to Default 43</button>
+              <button class="btn-small" onclick="clearAllMinds()" style="background-color:rgba(239, 68, 68, 0.08); color:#fca5a5; border-color:rgba(248, 113, 113, 0.15);">Clear All Minds</button>
+            </div>
+          </div>
+          
+          <div id="minds-list-container">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Dev Instructions -->
+        <div class="dev-instructions">
+          <h4>💻 Want to add minds permanently to Vercel?</h4>
+          <p>Since Vercel hosts a static site, custom browser uploads only stay in your local browser. To add new minds permanently for everyone:</p>
+          <ol>
+            <li>Put the photo file in your local <code>scientist-pics/</code> folder.</li>
+            <li>Open <code>index.html</code> on your computer.</li>
+            <li>Find the <code>DEFAULT_MINDS</code> array in the JavaScript section and add your scientist:
+              <br><code>{ name: "Your Name", photo_path: "scientist-pics/filename.jpg" }</code>
+            </li>
+            <li>Commit the changes and push to GitHub:
+              <br><code>git add . && git commit -m "Add new scientist" && git push</code>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div id="footer">
+    Whoissmartest &copy; 2026 &middot; Deciphering Intellectual Giants
+  </div>
+
+</div>
+
+<!-- Logic -->
+<script>
+// ============================================================================
+// Default 43 Scientific Minds Database
+// ============================================================================
+const DEFAULT_MINDS = [
+  { name: "Alan Turing", photo_path: "scientist-pics/Alan Turing.webp" },
+  { name: "Albert Einstein", photo_path: "scientist-pics/Albert Einstein.jpg" },
+  { name: "Alessandro Volta", photo_path: "scientist-pics/Alessandro Volta.jpeg" },
+  { name: "Archimedes", photo_path: "scientist-pics/Archimedes.jpg" },
+  { name: "Aristotle", photo_path: "scientist-pics/Aristotle.jpg" },
+  { name: "Benjamin Franklin", photo_path: "scientist-pics/Benjamin Franklin.webp" },
+  { name: "Bernhard Riemann", photo_path: "scientist-pics/Bernhard Riemann.jpeg" },
+  { name: "Carl Friedrich Gauss", photo_path: "scientist-pics/Carl Friedrich Gauss.jpg" },
+  { name: "David Hilbert", photo_path: "scientist-pics/David Hilbert.jpg" },
+  { name: "Edward Teller", photo_path: "scientist-pics/Edward Teller.jpg" },
+  { name: "Enrico Fermi", photo_path: "scientist-pics/Enrico Fermi.jpg" },
+  { name: "Erwin Schrödinger", photo_path: "scientist-pics/Erwin Schrödinger.jpg" },
+  { name: "Fritz Haber", photo_path: "scientist-pics/Fritz Haber.jpg" },
+  { name: "Galileo Galilei", photo_path: "scientist-pics/Galileo Galilei.jpg" },
+  { name: "Gottfried Wilhelm Leibniz", photo_path: "scientist-pics/Gottfried Wilhelm Leibniz.jpg" },
+  { name: "Henri Poincare", photo_path: "scientist-pics/Henri Poincare.png" },
+  { name: "J. Robert Oppenheimer", photo_path: "scientist-pics/J. Robert Oppenheimer.jpg" },
+  { name: "James Clerk Maxwell", photo_path: "scientist-pics/James Clerk Maxwell.jpg" },
+  { name: "James Watt", photo_path: "scientist-pics/James Watt.jpg" },
+  { name: "Johannes Kepler", photo_path: "scientist-pics/Johannes Kepler.jpg" },
+  { name: "John von Neumann", photo_path: "scientist-pics/John von Neumann.gif" },
+  { name: "Joseph Fourier", photo_path: "scientist-pics/Joseph Fourier.jpg" },
+  { name: "Joseph-Louis Lagrange", photo_path: "scientist-pics/Joseph-Louis Lagrange.jpg" },
+  { name: "Leonardo da Vinci", photo_path: "scientist-pics/Leonardo da Vinci.png" },
+  { name: "Leonhard Euler", photo_path: "scientist-pics/Leonhard Euler.jpg" },
+  { name: "Ludwig Boltzmann", photo_path: "scientist-pics/Ludwig Boltzmann.jpg" },
+  { name: "Marie Curie", photo_path: "scientist-pics/Marie Curie.jpg" },
+  { name: "Max Born", photo_path: "scientist-pics/Max Born.jpg" },
+  { name: "Max Planck", photo_path: "scientist-pics/Max Planck.jpg" },
+  { name: "Michael Faraday", photo_path: "scientist-pics/Michael Faraday.jpg" },
+  { name: "Nicolaus Copernicus", photo_path: "scientist-pics/Nicolaus Copernicus.jpg" },
+  { name: "Niels Bohr", photo_path: "scientist-pics/Niels Bohr.jpg" },
+  { name: "Nikola Tesla", photo_path: "scientist-pics/Nikola Tesla.jpeg" },
+  { name: "Paul Dirac", photo_path: "scientist-pics/Paul Dirac.jpg" },
+  { name: "Pierre-Simon Laplace", photo_path: "scientist-pics/Pierre-Simon Laplace.jpg" },
+  { name: "Richard Feynman", photo_path: "scientist-pics/Richard Feynman.jpg" },
+  { name: "Robert Hooke", photo_path: "scientist-pics/Robert Hooke.jpg" },
+  { name: "Sir George Stokes", photo_path: "scientist-pics/Sir George Stokes.jpg" },
+  { name: "Sir Isaac Newton", photo_path: "scientist-pics/Sir Isaac Newton.jpg" },
+  { name: "Srinivasa Ramanujan", photo_path: "scientist-pics/Srinivasa Ramanujan.jpg" },
+  { name: "Stephen Hawking", photo_path: "scientist-pics/Stephen Hawking.jpg" },
+  { name: "Werner Heisenberg", photo_path: "scientist-pics/Werner Heisenberg.jpg" },
+  { name: "Wolfgang Pauli", photo_path: "scientist-pics/Wolfgang Pauli.jpg" }
+];
+
+// ============================================================================
+// State Management
+// ============================================================================
+let minds = [];
+let personA = null;
+let personB = null;
+const K = 32;
+
+// Initialize database
+function initDatabase() {
+  const saved = localStorage.getItem("whoissmartest_minds");
+  if (saved) {
+    try {
+      minds = JSON.parse(saved);
+    } catch (e) {
+      console.error("Failed to parse saved minds, resetting to default", e);
+      loadDefaults();
+    }
+  } else {
+    loadDefaults();
+  }
+}
+
+// Load default 43 minds
+function loadDefaults() {
+  minds = DEFAULT_MINDS.map((m, idx) => ({
+    id: idx + 1,
+    name: m.name,
+    photo_path: m.photo_path,
+    elo: 1400.0,
+    wins: 0,
+    losses: 0
+  }));
+  saveToStorage();
+}
+
+function saveToStorage() {
+  localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
+}
+
+// ============================================================================
+// Web Audio Chalk/Chime Synth
+// ============================================================================
+function playChalkSound(type = 'click') {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    if (type === 'click') {
+      // 1. Chalk scratch (Bandpass filtered white noise)
+      const bufferSize = audioCtx.sampleRate * 0.08;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+      
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+      filter.Q.setValueAtTime(2.5, audioCtx.currentTime);
+      
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.07);
+      
+      noise.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      
+      // 2. High-pitched scholarly chime
+      const osc = audioCtx.createOscillator();
+      const oscGain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(950, audioCtx.currentTime);
+      
+      oscGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.22);
+      
+      osc.connect(oscGain);
+      oscGain.connect(audioCtx.destination);
+      
+      noise.start();
+      osc.start();
+      noise.stop(audioCtx.currentTime + 0.08);
+      osc.stop(audioCtx.currentTime + 0.23);
+    } else if (type === 'tap') {
+      // Chalk tap
+      const osc = audioCtx.createOscillator();
+      const oscGain = audioCtx.createGain();
+      
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.03);
+      
+      oscGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      oscGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+      
+      osc.connect(oscGain);
+      oscGain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.04);
+    }
+  } catch (e) {
+    console.warn("Web Audio blocked or unsupported:", e);
+  }
+}
+
+// ============================================================================
+// Text to Speech
+// ============================================================================
+let speechTimeout = null;
+function speakMatchup(nameA, nameB) {
+  if (speechTimeout) {
+    clearTimeout(speechTimeout);
+  }
+
+  // Brief delay to allow card loading/sound before starting speech
+  speechTimeout = setTimeout(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const text = `${nameA} versus ${nameB}`;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.95; // elegant, scholarly pace
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+  }, 250);
+}
+
+function cancelSpeech() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+// ============================================================================
+// Tab Navigation
+// ============================================================================
+function switchTab(tabName) {
+  playChalkSound('tap');
+  cancelSpeech();
+
+  // Update tabs active state
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('#header-nav a').forEach(el => el.classList.remove('active'));
+
+  document.getElementById(`tab-${tabName}`).classList.add('active');
+  document.getElementById(`nav-${tabName}`).classList.add('active');
+
+  // Trigger tab-specific load/renders
+  if (tabName === 'vote') {
+    loadNextMatchup();
+  } else if (tabName === 'leaderboard') {
+    document.getElementById("search-input").value = "";
+    renderLeaderboard();
+  } else if (tabName === 'admin') {
+    renderAdminPanel();
+  }
+}
+
+// ============================================================================
+// Voting Page Logic
+// ============================================================================
+function loadNextMatchup() {
+  if (minds.length < 2) {
+    document.getElementById("vote-game-container").style.display = "none";
+    document.getElementById("no-photos").style.display = "block";
+    return;
+  }
+  document.getElementById("vote-game-container").style.display = "block";
+  document.getElementById("no-photos").style.display = "none";
+
+  // Select two random distinct minds
+  let indexA = Math.floor(Math.random() * minds.length);
+  let indexB = Math.floor(Math.random() * minds.length);
+  while (indexB === indexA) {
+    indexB = Math.floor(Math.random() * minds.length);
+  }
+
+  personA = minds[indexA];
+  personB = minds[indexB];
+
+  // Render cards with smooth fade-in
+  const row = document.getElementById("matchup-row");
+  row.classList.add("fade-in");
+  row.classList.remove("fade-in-active");
+
+  setTimeout(() => {
+    // Escape standard text values with textContent
+    document.getElementById("name-a").textContent = personA.name;
+    document.getElementById("photo-a").src = personA.photo_path;
+    document.getElementById("photo-a").alt = personA.name;
+    document.getElementById("elo-a").textContent = `Elo ${Math.round(personA.elo)}`;
+    document.getElementById("wins-a").textContent = `${personA.wins}W`;
+    document.getElementById("losses-a").textContent = `${personA.losses}L`;
+
+    document.getElementById("name-b").textContent = personB.name;
+    document.getElementById("photo-b").src = personB.photo_path;
+    document.getElementById("photo-b").alt = personB.name;
+    document.getElementById("elo-b").textContent = `Elo ${Math.round(personB.elo)}`;
+    document.getElementById("wins-b").textContent = `${personB.wins}W`;
+    document.getElementById("losses-b").textContent = `${personB.losses}L`;
+
+    row.classList.remove("fade-in");
+    row.classList.add("fade-in-active");
+
+    // Speak matchup names
+    speakMatchup(personA.name, personB.name);
+  }, 50);
+}
+
+// Submit ELO Calculation Vote
+function submitVote(choice) {
+  if (!personA || !personB) return;
+
+  const cardId = choice === 'A' ? 'card-a' : 'card-b';
+  const card = document.getElementById(cardId);
+  if (card) {
+    card.classList.add('keyboard-active');
+  }
+
+  cancelSpeech();
+  playChalkSound('click');
+
+  // Perform Elo calculations
+  let winner = choice === 'A' ? personA : personB;
+  let loser = choice === 'A' ? personB : personA;
+
+  const expectedWinner = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
+  const expectedLoser = 1 / (1 + Math.pow(10, (winner.elo - loser.elo) / 400));
+
+  winner.elo = Math.round((winner.elo + K * (1 - expectedWinner)) * 10) / 10;
+  loser.elo = Math.round((loser.elo + K * (0 - expectedLoser)) * 10) / 10;
+
+  winner.wins += 1;
+  loser.losses += 1;
+
+  // Save changes
+  saveToStorage();
+
+  // Short visual transition pause before next matchup loading
+  setTimeout(() => {
+    if (card) card.classList.remove('keyboard-active');
+    
+    // Add slide-out fade
+    const row = document.getElementById("matchup-row");
+    row.classList.add("fade-out");
+    
+    setTimeout(() => {
+      row.classList.remove("fade-out");
+      loadNextMatchup();
+    }, 200);
+  }, 180);
+}
+
+// Arrow keyboard listeners
+window.addEventListener('keydown', function(e) {
+  const activeTab = document.querySelector('.tab-content.active');
+  if (activeTab && activeTab.id === 'tab-vote') {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      submitVote('A');
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      submitVote('B');
+    }
+  }
+});
+
+// Speak on first interaction if blocked by browser
+let firstInteractionSpoken = false;
+const triggerFirstSpeech = () => {
+  if (!firstInteractionSpoken) {
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab && activeTab.id === 'tab-vote' && personA && personB) {
+      speakMatchup(personA.name, personB.name);
+    }
+    firstInteractionSpoken = true;
+  }
+  window.removeEventListener('click', triggerFirstSpeech);
+  window.removeEventListener('keydown', triggerFirstSpeech);
+};
+window.addEventListener('click', triggerFirstSpeech);
+window.addEventListener('keydown', triggerFirstSpeech);
+
+// ============================================================================
+// Leaderboard Page Logic
+// ============================================================================
+function renderLeaderboard() {
+  const container = document.getElementById("leaderboard-container");
+  const searchQuery = document.getElementById("search-input").value.toLowerCase().trim();
+
+  // Sort minds by Elo descending
+  const sorted = [...minds].sort((a, b) => b.elo - a.elo);
+
+  if (sorted.length === 0) {
+    container.innerHTML = '<p style="color:#94a3b8; padding:30px 0; text-align:center;">No minds in the database yet.</p>';
+    return;
+  }
+
+  // Filter based on search query
+  const filtered = sorted.filter(p => p.name.toLowerCase().includes(searchQuery));
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="color:#94a3b8; padding:30px 0; text-align:center;">No minds match your search.</p>';
+    return;
+  }
+
+  let tableHtml = `
+    <table id="leaderboard-table">
+      <tr>
+        <th>Rank</th>
+        <th>Mind</th>
+        <th>Name</th>
+        <th>Elo</th>
+        <th>Wins</th>
+        <th>Losses</th>
+        <th>W/L Ratio</th>
+      </tr>
+  `;
+
+  filtered.forEach(p => {
+    // Re-verify the correct rank from the full sorted list
+    const rank = sorted.findIndex(el => el.id === p.id) + 1;
+    let badgeClass = "rank-other";
+    let badgeContent = rank;
+
+    if (rank === 1) {
+      badgeClass = "rank-badge rank-1";
+    } else if (rank === 2) {
+      badgeClass = "rank-badge rank-2";
+    } else if (rank === 3) {
+      badgeClass = "rank-badge rank-3";
+    } else {
+      badgeClass = "rank-badge rank-other";
+    }
+
+    const wlRatio = p.losses > 0 ? (p.wins / p.losses).toFixed(2) : "&mdash;";
+
+    // Escape name using text element creators or simple inline string replace for safety
+    const safeName = p.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    tableHtml += `
+      <tr>
+        <td class="lb-rank"><span class="${badgeClass}">${badgeContent}</span></td>
+        <td><img class="lb-thumb" src="${p.photo_path}" alt="${safeName}"></td>
+        <td class="lb-name">${safeName}</td>
+        <td class="lb-elo">${Math.round(p.elo)}</td>
+        <td class="lb-wins">${p.wins}</td>
+        <td class="lb-losses">${p.losses}</td>
+        <td class="lb-wl">${wlRatio}</td>
+      </tr>
+    `;
+  });
+
+  tableHtml += "</table>";
+  container.innerHTML = tableHtml;
+}
+
+// ============================================================================
+// Admin Login / Console Panel Logic
+// ============================================================================
+function renderAdminPanel() {
+  const isLoggedIn = sessionStorage.getItem("admin_logged_in") === "true";
+  
+  if (isLoggedIn) {
+    document.getElementById("admin-login-box").style.display = "none";
+    document.getElementById("admin-panel").style.display = "block";
+    renderAdminMindsList();
+  } else {
+    document.getElementById("admin-login-box").style.display = "block";
+    document.getElementById("admin-panel").style.display = "none";
+    document.getElementById("admin-password").value = "";
+    document.getElementById("login-error").style.display = "none";
+  }
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const password = document.getElementById("admin-password").value;
+  
+  // Clean client-side admin password check (matching original default "whoissmartest")
+  if (password === "whoissmartest") {
+    sessionStorage.setItem("admin_logged_in", "true");
+    document.getElementById("login-error").style.display = "none";
+    playChalkSound('click');
+    renderAdminPanel();
+  } else {
+    const errorEl = document.getElementById("login-error");
+    errorEl.textContent = "Wrong password.";
+    errorEl.style.display = "block";
+  }
+}
+
+function handleLogout() {
+  sessionStorage.removeItem("admin_logged_in");
+  playChalkSound('tap');
+  renderAdminPanel();
+}
+
+function renderAdminMindsList() {
+  const container = document.getElementById("minds-list-container");
+  document.getElementById("minds-count-title").textContent = `All Photos (${minds.length})`;
+
+  if (minds.length === 0) {
+    container.innerHTML = '<p style="color:#94a3b8; text-align:center; padding: 20px 0;">No minds registered yet.</p>';
+    return;
+  }
+
+  // Sorted reverse by ID to show newest uploaded minds first
+  const sorted = [...minds].reverse();
+
+  let listHtml = "<table>";
+  sorted.forEach(p => {
+    const safeName = p.name.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    listHtml += `
+      <tr>
+        <td><img src="${p.photo_path}" alt="${safeName}"></td>
+        <td><strong>${safeName}</strong></td>
+        <td style="color:#999999;">Elo ${Math.round(p.elo)} &nbsp; ${p.wins}W / ${p.losses}L</td>
+        <td style="text-align:right;">
+          <button class="btn-small" onclick="deleteMind(${p.id})">delete</button>
+        </td>
+      </tr>
+    `;
+  });
+  listHtml += "</table>";
+  container.innerHTML = listHtml;
+}
+
+// Add Custom Mind (Base64 file storage)
+function handleAddMind(e) {
+  e.preventDefault();
+  
+  const nameInput = document.getElementById("add-name");
+  const photoInput = document.getElementById("add-photo");
+  const msgOk = document.getElementById("admin-message");
+  const msgErr = document.getElementById("admin-error");
+
+  msgOk.style.display = "none";
+  msgErr.style.display = "none";
+
+  const name = nameInput.value.trim();
+  const file = photoInput.files[0];
+
+  if (!name || !file) {
+    msgErr.textContent = "Please fill in all fields.";
+    msgErr.style.display = "block";
+    return;
+  }
+
+  // Convert image file to base64 Data URL
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const base64Data = event.target.result;
+
+    // Check if name or image already exists
+    const duplicateName = minds.some(p => p.name.toLowerCase() === name.toLowerCase());
+    if (duplicateName) {
+      msgErr.textContent = `A mind with the name "${name}" already exists.`;
+      msgErr.style.display = "block";
+      return;
+    }
+
+    // Assign new unique ID
+    const newId = minds.reduce((max, p) => p.id > max ? p.id : max, 0) + 1;
+
+    minds.push({
+      id: newId,
+      name: name,
+      photo_path: base64Data,
+      elo: 1400.0,
+      wins: 0,
+      losses: 0
+    });
+
+    saveToStorage();
+    playChalkSound('click');
+
+    // Reset inputs
+    nameInput.value = "";
+    photoInput.value = "";
+
+    msgOk.textContent = `Successfully added "${name}"!`;
+    msgOk.style.display = "block";
+
+    renderAdminMindsList();
+  };
+
+  reader.onerror = function() {
+    msgErr.textContent = "Error reading image file.";
+    msgErr.style.display = "block";
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// Delete mind from LocalStorage
+function deleteMind(id) {
+  const p = minds.find(el => el.id === id);
+  if (!p) return;
+
+  if (confirm(`Delete ${p.name}?`)) {
+    minds = minds.filter(el => el.id !== id);
+    saveToStorage();
+    playChalkSound('click');
+    renderAdminMindsList();
+  }
+}
+
+// Clear all minds
+function clearAllMinds() {
+  if (confirm("DELETE ALL MINDS? This will permanently delete all minds and votes in this browser!")) {
+    minds = [];
+    saveToStorage();
+    playChalkSound('click');
+    renderAdminMindsList();
+  }
+}
+
+// Reset minds back to the default 43 scientists
+function resetToDefaults() {
+  if (confirm("Reset database to default 43 minds? This will overwrite your current scores and custom local additions.")) {
+    loadDefaults();
+    playChalkSound('click');
+    renderAdminMindsList();
+    
+    const msgOk = document.getElementById("admin-message");
+    msgOk.textContent = "Reset to default 43 minds successfully!";
+    msgOk.style.display = "block";
+  }
+}
+
+// ============================================================================
+// Bootstrap / Onload
+// ============================================================================
+initDatabase();
+loadNextMatchup();
+</script>
+
+</body>
+</html>
