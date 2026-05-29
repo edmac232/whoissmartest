@@ -117,8 +117,11 @@
   </div>
 
   <!-- Subheader -->
-  <div id="subheader">
-    Were we let in for our minds? Yes. Will we be judged on them? Yes.
+  <div id="subheader" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px 20px;">
+    <span style="flex-grow: 1; text-align: center;">Were we let in for our minds? Yes. Will we be judged on them? Yes.</span>
+    <span id="db-status-badge" style="font-family: 'Fira Code', monospace; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 5px; background: rgba(223, 215, 195, 0.08); color: #dfd7c3; border: 1px solid rgba(223, 215, 195, 0.2); user-select: none;">
+      Checking...
+    </span>
   </div>
 
   <!-- Content Containers -->
@@ -325,30 +328,62 @@ const DEFAULT_MINDS = [
 ];
 
 // ============================================================================
-// State Management
+// State Management & DB Configuration
 // ============================================================================
 let minds = [];
 let personA = null;
 let personB = null;
+let isSharedDb = false; // Flag to indicate if we're connected to the Vercel KV REST API
 const K = 32;
 
-// Initialize database
-function initDatabase() {
-  const saved = localStorage.getItem("whoissmartest_minds");
-  if (saved) {
-    try {
-      minds = JSON.parse(saved);
-    } catch (e) {
-      console.error("Failed to parse saved minds, resetting to default", e);
-      loadDefaults();
+// Initialize Database (tries Serverless API, falls back gracefully to LocalStorage)
+async function initDatabase() {
+  const badge = document.getElementById("db-status-badge");
+  
+  try {
+    // Attempt to fetch from Vercel Serverless Function
+    const response = await fetch("/api/minds");
+    if (!response.ok) {
+      throw new Error(`API returned ${response.status}`);
     }
-  } else {
-    loadDefaults();
+    
+    minds = await response.json();
+    isSharedDb = true;
+    
+    // Update premium UI badge to show Global Database state
+    badge.textContent = "🌐 Global Leaderboard";
+    badge.style.background = "rgba(74, 222, 128, 0.06)";
+    badge.style.color = "#86efac";
+    badge.style.borderColor = "rgba(74, 222, 128, 0.2)";
+  } catch (error) {
+    console.warn("Could not connect to shared database. Falling back to local browser storage:", error);
+    
+    // Fallback: load from browser's local storage
+    isSharedDb = false;
+    const saved = localStorage.getItem("whoissmartest_minds");
+    if (saved) {
+      try {
+        minds = JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse local storage minds, loading defaults", e);
+        loadLocalDefaults();
+      }
+    } else {
+      loadLocalDefaults();
+    }
+
+    // Update premium UI badge to show Local Storage state
+    badge.textContent = "💾 Local Browser Storage";
+    badge.style.background = "rgba(223, 215, 195, 0.06)";
+    badge.style.color = "#dfd7c3";
+    badge.style.borderColor = "rgba(223, 215, 195, 0.2)";
   }
+  
+  loadNextMatchup();
 }
 
-// Load default 43 minds
-function loadDefaults() {
+// Load default 43 minds (local only fallback)
+function loadLocalDefaults() {
   minds = DEFAULT_MINDS.map((m, idx) => ({
     id: idx + 1,
     name: m.name,
@@ -361,7 +396,9 @@ function loadDefaults() {
 }
 
 function saveToStorage() {
-  localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
+  if (!isSharedDb) {
+    localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
+  }
 }
 
 // ============================================================================
@@ -541,7 +578,7 @@ function loadNextMatchup() {
 }
 
 // Submit ELO Calculation Vote
-function submitVote(choice) {
+async function submitVote(choice) {
   if (!personA || !personB) return;
 
   const cardId = choice === 'A' ? 'card-a' : 'card-b';
@@ -553,21 +590,36 @@ function submitVote(choice) {
   cancelSpeech();
   playChalkSound('click');
 
-  // Perform Elo calculations
   let winner = choice === 'A' ? personA : personB;
   let loser = choice === 'A' ? personB : personA;
 
-  const expectedWinner = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
-  const expectedLoser = 1 / (1 + Math.pow(10, (winner.elo - loser.elo) / 400));
-
-  winner.elo = Math.round((winner.elo + K * (1 - expectedWinner)) * 10) / 10;
-  loser.elo = Math.round((loser.elo + K * (0 - expectedLoser)) * 10) / 10;
-
-  winner.wins += 1;
-  loser.losses += 1;
-
-  // Save changes
-  saveToStorage();
+  if (isSharedDb) {
+    // Shared Global Database: Send vote to API to perform atomic server-side calculation
+    try {
+      const response = await fetch("/api/vote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          winner_id: winner.id,
+          loser_id: loser.id
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to submit vote to global database");
+      }
+      
+      minds = await response.json();
+    } catch (err) {
+      console.error("Failed to vote globally, falling back to local computation:", err);
+      computeLocalVote(winner, loser);
+    }
+  } else {
+    // Local storage only fallback
+    computeLocalVote(winner, loser);
+  }
 
   // Short visual transition pause before next matchup loading
   setTimeout(() => {
@@ -582,6 +634,19 @@ function submitVote(choice) {
       loadNextMatchup();
     }, 200);
   }, 180);
+}
+
+function computeLocalVote(winner, loser) {
+  const expectedWinner = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
+  const expectedLoser = 1 / (1 + Math.pow(10, (winner.elo - loser.elo) / 400));
+
+  winner.elo = Math.round((winner.elo + K * (1 - expectedWinner)) * 10) / 10;
+  loser.elo = Math.round((loser.elo + K * (0 - expectedLoser)) * 10) / 10;
+
+  winner.wins += 1;
+  loser.losses += 1;
+
+  saveToStorage();
 }
 
 // Arrow keyboard listeners
@@ -782,30 +847,56 @@ function handleAddMind(e) {
 
   // Convert image file to base64 Data URL
   const reader = new FileReader();
-  reader.onload = function(event) {
+  reader.onload = async function(event) {
     const base64Data = event.target.result;
 
-    // Check if name or image already exists
-    const duplicateName = minds.some(p => p.name.toLowerCase() === name.toLowerCase());
-    if (duplicateName) {
-      msgErr.textContent = `A mind with the name "${name}" already exists.`;
-      msgErr.style.display = "block";
-      return;
+    if (isSharedDb) {
+      // POST to /api/minds
+      try {
+        const response = await fetch("/api/minds", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "add",
+            name: name,
+            photo_path: base64Data
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || "Failed to add mind globally");
+        }
+
+        minds = await response.json();
+      } catch (err) {
+        msgErr.textContent = err.message;
+        msgErr.style.display = "block";
+        return;
+      }
+    } else {
+      // Local Storage path
+      const duplicateName = minds.some(p => p.name.toLowerCase() === name.toLowerCase());
+      if (duplicateName) {
+        msgErr.textContent = `A mind with the name "${name}" already exists.`;
+        msgErr.style.display = "block";
+        return;
+      }
+
+      const newId = minds.reduce((max, p) => p.id > max ? p.id : max, 0) + 1;
+      minds.push({
+        id: newId,
+        name: name,
+        photo_path: base64Data,
+        elo: 1400.0,
+        wins: 0,
+        losses: 0
+      });
+      saveToStorage();
     }
 
-    // Assign new unique ID
-    const newId = minds.reduce((max, p) => p.id > max ? p.id : max, 0) + 1;
-
-    minds.push({
-      id: newId,
-      name: name,
-      photo_path: base64Data,
-      elo: 1400.0,
-      wins: 0,
-      losses: 0
-    });
-
-    saveToStorage();
     playChalkSound('click');
 
     // Reset inputs
@@ -826,38 +917,111 @@ function handleAddMind(e) {
   reader.readAsDataURL(file);
 }
 
-// Delete mind from LocalStorage
-function deleteMind(id) {
+// Delete mind from LocalStorage / Global Database
+async function deleteMind(id) {
   const p = minds.find(el => el.id === id);
   if (!p) return;
 
   if (confirm(`Delete ${p.name}?`)) {
-    minds = minds.filter(el => el.id !== id);
-    saveToStorage();
+    if (isSharedDb) {
+      try {
+        const response = await fetch("/api/minds", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "delete",
+            id: id
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete mind globally");
+        }
+
+        minds = await response.json();
+      } catch (err) {
+        alert(err.message);
+        return;
+      }
+    } else {
+      minds = minds.filter(el => el.id !== id);
+      saveToStorage();
+    }
+
     playChalkSound('click');
     renderAdminMindsList();
   }
 }
 
 // Clear all minds
-function clearAllMinds() {
-  if (confirm("DELETE ALL MINDS? This will permanently delete all minds and votes in this browser!")) {
-    minds = [];
-    saveToStorage();
+async function clearAllMinds() {
+  if (confirm("DELETE ALL MINDS? This will permanently delete all minds and votes globally!")) {
+    if (isSharedDb) {
+      try {
+        const response = await fetch("/api/minds", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "clear"
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to clear database globally");
+        }
+
+        minds = await response.json();
+      } catch (err) {
+        alert(err.message);
+        return;
+      }
+    } else {
+      minds = [];
+      saveToStorage();
+    }
+
     playChalkSound('click');
     renderAdminMindsList();
   }
 }
 
 // Reset minds back to the default 43 scientists
-function resetToDefaults() {
-  if (confirm("Reset database to default 43 minds? This will overwrite your current scores and custom local additions.")) {
-    loadDefaults();
+async function resetToDefaults() {
+  if (confirm("Reset database to default 43 minds? This will overwrite all scores and custom additions.")) {
+    if (isSharedDb) {
+      try {
+        const response = await fetch("/api/minds", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            action: "reset"
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to reset database globally");
+        }
+
+        minds = await response.json();
+      } catch (err) {
+        alert(err.message);
+        return;
+      }
+    } else {
+      loadLocalDefaults();
+    }
+
     playChalkSound('click');
     renderAdminMindsList();
     
     const msgOk = document.getElementById("admin-message");
-    msgOk.textContent = "Reset to default 43 minds successfully!";
+    msgOk.textContent = "Reset database to default 43 minds successfully!";
     msgOk.style.display = "block";
   }
 }
@@ -866,8 +1030,8 @@ function resetToDefaults() {
 // Bootstrap / Onload
 // ============================================================================
 initDatabase();
-loadNextMatchup();
 </script>
 
 </body>
+</html>dy>
 </html>
