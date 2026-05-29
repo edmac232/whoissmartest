@@ -1010,6 +1010,30 @@ async function resetToDefaults() {
 // Bootstrap / Onload
 // ============================================================================
 initDatabase();
+
+// Silent Background Sync (polls every 4 seconds when tab is active to update rankings in real-time)
+setInterval(async () => {
+  if (isSharedDb && document.visibilityState === "visible") {
+    try {
+      const response = await fetch("/api/minds");
+      if (response.ok) {
+        const latest = await response.json();
+        // Silently update state only if database ratings actually changed
+        if (JSON.stringify(latest) !== JSON.stringify(minds)) {
+          minds = latest;
+          
+          // Re-render leaderboard instantly if looking at it
+          const activeTab = document.querySelector('.tab-content.active');
+          if (activeTab && activeTab.id === 'tab-leaderboard') {
+            renderLeaderboard();
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Background sync warning:", e);
+    }
+  }
+}, 4000);
 </script>
 </body>
 </html>
