@@ -109,7 +109,7 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       let minds = await querySupabase("persons?select=*&order=id.asc");
       
-      // Auto-seed database with default 43 minds on first load if empty
+      // Auto-seed database with default minds on first load if empty
       if (!minds || minds.length === 0) {
         const payload = DEFAULT_MINDS.map(m => ({
           name: m.name,
@@ -120,6 +120,22 @@ export default async function handler(req, res) {
         }));
         await querySupabase("persons", "POST", payload);
         minds = await querySupabase("persons?select=*&order=id.asc");
+      } else if (minds.length < DEFAULT_MINDS.length) {
+        // Self-healing seeder: detect and auto-populate missing default scientists
+        const existingNames = new Set(minds.map(m => m.name.toLowerCase().trim()));
+        const missingMinds = DEFAULT_MINDS.filter(m => !existingNames.has(m.name.toLowerCase().trim()));
+        
+        if (missingMinds.length > 0) {
+          const payload = missingMinds.map(m => ({
+            name: m.name,
+            photo_path: m.photo_path,
+            elo: 1400.0,
+            wins: 0,
+            losses: 0
+          }));
+          await querySupabase("persons", "POST", payload);
+          minds = await querySupabase("persons?select=*&order=id.asc");
+        }
       }
       
       return res.status(200).json(minds || []);
