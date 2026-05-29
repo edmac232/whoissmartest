@@ -112,7 +112,6 @@
     <div id="header-nav" style="display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; align-items: center;">
       <a onclick="switchTab('vote')" id="nav-vote" class="active">Vote</a>
       <a onclick="switchTab('leaderboard')" id="nav-leaderboard">Leaderboard</a>
-      <a onclick="switchTab('suggest')" id="nav-suggest">Suggest a Mind</a>
       <a onclick="switchTab('admin')" id="nav-admin">Admin</a>
     </div>
     <div style="margin-top: 14px; display: flex; justify-content: center;">
@@ -181,30 +180,6 @@
       </div>
 
       <div id="leaderboard-container">
-    </div>
-
-    <!-- TAB: SUGGEST -->
-    <div id="tab-suggest" class="tab-content">
-      <div id="form-box" style="max-width: 500px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-          <span style="font-size: 32px; display: block; margin-bottom: 8px;">💡</span>
-          <h2 style="border-bottom:none; margin-bottom:4px; padding-bottom:0; text-align:center; font-family: 'Lora', serif; font-size: 20px;">Notice a great mind missing?</h2>
-          <p style="color:#dfd7c3; font-size:14px; font-style:italic; margin:0;">Let us know!</p>
-        </div>
-        
-        <p class="msg-ok" id="suggest-message" style="display:none;"></p>
-        <p class="msg-err" id="suggest-error" style="display:none;"></p>
-        <form onsubmit="handleSuggest(event)">
-          <div class="field">
-            <label>Scientist's Name</label>
-            <input type="text" id="suggest-name" placeholder="e.g. Charles Darwin" required>
-          </div>
-          <div class="field">
-            <label>Why should they be included? (Optional)</label>
-            <textarea id="suggest-details" placeholder="Tell us about their contributions..." style="width:100%; min-height:80px; background:#121314; border:1px solid rgba(223, 215, 195, 0.15); border-radius:4px; color:#ffffff; padding:8px 12px; font-family:inherit; font-size:13px; outline:none; resize:vertical;"></textarea>
-          </div>
-          <button class="btn" type="submit">Submit Suggestion</button>
-        </form>
       </div>
     </div>
 
@@ -275,18 +250,16 @@
               <br><code>git add . && git commit -m "Add new scientist" && git push</code>
             </li>
           </ol>
-        </div>
-      </div>
-    </div>   </div>
-
-  </div>
+      </div> <!-- closes admin-panel -->
+    </div> <!-- closes tab-admin -->
+  </div> <!-- closes content -->
 
   <!-- Footer -->
   <div id="footer">
     Who Is Smartest &copy; 2026
   </div>
 
-</div>
+</div> <!-- closes shell -->
 
 <!-- Logic -->
 <script>
