@@ -15,8 +15,8 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32MB file upload limit
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "whoissmartest")
-DATABASE = os.path.join(app.instance_path, "whoissmartest.db")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "facemash")
+DATABASE = os.path.join(app.instance_path, "facemash.db")
 UPLOAD_FOLDER = os.path.join(app.static_folder, "uploads")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
