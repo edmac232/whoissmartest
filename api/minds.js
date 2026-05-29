@@ -36,7 +36,7 @@ const DEFAULT_MINDS = [
   { name: "Nikola Tesla", photo_path: "scientist-pics/Nikola Tesla.jpeg" },
   { name: "Paul Dirac", photo_path: "scientist-pics/Paul Dirac.jpg" },
   { name: "Pierre-Simon Laplace", photo_path: "scientist-pics/Pierre-Simon Laplace.jpg" },
-  { name: "Rene Descartes", photo_path: "scientist-pics/Rene Descartes.jpg" },
+  { name: "Rene Descartes", photo_path: "scientist-pics/René Descartes.webp" },
   { name: "Richard Feynman", photo_path: "scientist-pics/Richard Feynman.jpg" },
   { name: "Robert Hooke", photo_path: "scientist-pics/Robert Hooke.jpg" },
   { name: "Sir George Stokes", photo_path: "scientist-pics/Sir George Stokes.jpg" },

@@ -109,10 +109,14 @@
   <!-- Header -->
   <div id="header">
     <h1>Who Is Smartest</h1>
-    <div id="header-nav" style="display: flex; justify-content: center; gap: 48px;">
+    <div id="header-nav" style="display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; align-items: center;">
       <a onclick="switchTab('vote')" id="nav-vote" class="active">Vote</a>
       <a onclick="switchTab('leaderboard')" id="nav-leaderboard">Leaderboard</a>
+      <a onclick="switchTab('suggest')" id="nav-suggest">Suggest a Mind</a>
       <a onclick="switchTab('admin')" id="nav-admin">Admin</a>
+    </div>
+    <div style="margin-top: 14px; display: flex; justify-content: center;">
+      <div id="db-status-badge" style="font-size: 11px; padding: 4px 12px; border-radius: 12px; font-weight: 500; font-family: 'Fira Code', monospace; letter-spacing: 0.5px; border: 1px solid transparent; display: inline-block;"></div>
     </div>
   </div>
   <!-- Content Containers -->
@@ -177,33 +181,39 @@
       </div>
 
       <div id="leaderboard-container">
-        <!-- Rendered dynamically -->
+    </div>
+
+    <!-- TAB: SUGGEST -->
+    <div id="tab-suggest" class="tab-content">
+      <div id="form-box" style="max-width: 500px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <span style="font-size: 32px; display: block; margin-bottom: 8px;">💡</span>
+          <h2 style="border-bottom:none; margin-bottom:4px; padding-bottom:0; text-align:center; font-family: 'Lora', serif; font-size: 20px;">Notice a great mind missing?</h2>
+          <p style="color:#dfd7c3; font-size:14px; font-style:italic; margin:0;">Let us know!</p>
+        </div>
+        
+        <p class="msg-ok" id="suggest-message" style="display:none;"></p>
+        <p class="msg-err" id="suggest-error" style="display:none;"></p>
+        <form onsubmit="handleSuggest(event)">
+          <div class="field">
+            <label>Scientist's Name</label>
+            <input type="text" id="suggest-name" placeholder="e.g. Charles Darwin" required>
+          </div>
+          <div class="field">
+            <label>Why should they be included? (Optional)</label>
+            <textarea id="suggest-details" placeholder="Tell us about their contributions..." style="width:100%; min-height:80px; background:#121314; border:1px solid rgba(223, 215, 195, 0.15); border-radius:4px; color:#ffffff; padding:8px 12px; font-family:inherit; font-size:13px; outline:none; resize:vertical;"></textarea>
+          </div>
+          <button class="btn" type="submit">Submit Suggestion</button>
+        </form>
       </div>
     </div>
 
     <!-- TAB: ADMIN -->
     <div id="tab-admin" class="tab-content">
-      <!-- Admin Login -->
-      <div id="admin-login-box" style="display:block;">
-        <div id="form-box">
-          <h2>Admin Login</h2>
-          <p class="msg-err" id="login-error" style="display:none;"></p>
-          <form onsubmit="handleLogin(event)">
-            <div class="field">
-              <label>Password</label>
-              <input type="password" id="admin-password" autofocus>
-            </div>
-            <button class="btn" type="submit">Login</button>
-          </form>
-        </div>
-      </div>
-
-      <!-- Admin Panel Dashboard -->
-      <div id="admin-panel" style="display:none;">
+      <div id="admin-panel" style="display:block;">
         <div id="form-box" style="margin-bottom: 24px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(223, 215, 195, 0.2); padding-bottom:8px; margin-bottom:18px;">
+          <div style="border-bottom: 1px solid rgba(223, 215, 195, 0.2); padding-bottom:8px; margin-bottom:18px;">
             <h2 style="border-bottom:none; margin-bottom:0; padding-bottom:0;">Admin Console</h2>
-            <button class="btn-small" onclick="handleLogout()">Logout</button>
           </div>
 
           <p class="msg-ok" id="admin-message" style="display:none;"></p>
@@ -211,7 +221,18 @@
 
           <!-- Add custom candidate locally -->
           <form onsubmit="handleAddMind(event)">
-            <h3 style="color:#dfd7c3; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Add Custom Mind (Local Browser)</h3>
+            <h3 style="color:#dfd7c3; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Add Custom Mind (Local Browser Sandbox)</h3>
+            
+            <div style="background:rgba(223, 215, 195, 0.05); border: 1px solid rgba(223, 215, 195, 0.2); border-radius: 6px; padding: 14px; margin-bottom: 16px; font-size: 12.5px; color: #cbd5e1; line-height: 1.6; text-align: left;">
+              🛡️ <strong>Direct Admin Sandbox:</strong> No password is required because all changes made here are kept <strong>locally on your device</strong>.
+              <br><br>
+              ⚠️ <strong>Pictures Saved Locally:</strong> Any custom minds and uploaded pictures you add are stored <strong>strictly inside your browser's local sandbox</strong> and are not uploaded to our servers.
+              <br><br>
+              ⛔ <strong>Isolated Mode Trigger:</strong> The second you add a custom candidate or delete anyone, this browser will enter <strong>Isolated Local Storage Mode</strong>. The global leaderboard will <strong>no longer change or sync for you</strong>. 
+              <br><br>
+              To return to standard global sync and view the shared rankings, simply click <strong>"Reset to Default 47"</strong> below.
+            </div>
+
             <div class="field">
               <label>Name</label>
               <input type="text" id="add-name" required>
@@ -219,7 +240,7 @@
             <div class="field">
               <label>Photo</label>
               <input type="file" id="add-photo" accept="image/*" required>
-              <small>Select an image to represent this mind.</small>
+              <small>Select an image from your computer to represent this mind.</small>
             </div>
             <button class="btn" type="submit">Add Mind</button>
           </form>
@@ -230,7 +251,7 @@
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom: 1px solid rgba(223, 215, 195, 0.2); padding-bottom: 6px;">
             <h3 style="border-bottom:none; margin-bottom:0; padding-bottom:0; color:#dfd7c3; font-size:14px; font-weight:600;" id="minds-count-title">All Minds</h3>
             <div style="display:flex; gap: 8px;">
-              <button class="btn-small" onclick="resetToDefaults()" style="background-color:rgba(223, 215, 195, 0.08); color:#dfd7c3; border-color:rgba(223, 215, 195, 0.25);">Reset to Default 43</button>
+              <button class="btn-small" onclick="resetToDefaults()" style="background-color:rgba(223, 215, 195, 0.08); color:#dfd7c3; border-color:rgba(223, 215, 195, 0.25);">Reset to Default 47</button>
               <button class="btn-small" onclick="clearAllMinds()" style="background-color:rgba(239, 68, 68, 0.08); color:#fca5a5; border-color:rgba(248, 113, 113, 0.15);">Clear All Minds</button>
             </div>
           </div>
@@ -256,13 +277,13 @@
           </ol>
         </div>
       </div>
-    </div>
+    </div>   </div>
 
   </div>
 
   <!-- Footer -->
   <div id="footer">
-    Whoissmartest &copy; 2026
+    Who Is Smartest &copy; 2026
   </div>
 
 </div>
@@ -310,7 +331,7 @@ const DEFAULT_MINDS = [
   { name: "Nikola Tesla", photo_path: "scientist-pics/Nikola Tesla.jpeg" },
   { name: "Paul Dirac", photo_path: "scientist-pics/Paul Dirac.jpg" },
   { name: "Pierre-Simon Laplace", photo_path: "scientist-pics/Pierre-Simon Laplace.jpg" },
-  { name: "Rene Descartes", photo_path: "scientist-pics/Rene Descartes.jpg" },
+  { name: "Rene Descartes", photo_path: "scientist-pics/René Descartes.webp" },
   { name: "Richard Feynman", photo_path: "scientist-pics/Richard Feynman.jpg" },
   { name: "Robert Hooke", photo_path: "scientist-pics/Robert Hooke.jpg" },
   { name: "Sir George Stokes", photo_path: "scientist-pics/Sir George Stokes.jpg" },
@@ -334,29 +355,12 @@ const K = 32;
 // Initialize Database (tries Serverless API, falls back gracefully to LocalStorage)
 async function initDatabase() {
   const badge = document.getElementById("db-status-badge");
+  const isIsolated = localStorage.getItem("whoissmartest_isolated") === "true";
   
-  try {
-    // Attempt to fetch from Vercel Serverless Function
-    const response = await fetch("/api/minds");
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
-    }
-    
-    minds = await response.json();
-    isSharedDb = true;
-    
-    // Update premium UI badge to show Global Database state if it exists
-    if (badge) {
-      badge.textContent = "🌐 Global Leaderboard";
-      badge.style.background = "rgba(74, 222, 128, 0.06)";
-      badge.style.color = "#86efac";
-      badge.style.borderColor = "rgba(74, 222, 128, 0.2)";
-    }
-  } catch (error) {
-    console.warn("Could not connect to shared database. Falling back to local browser storage:", error);
-    
-    // Fallback: load from browser's local storage
+  if (isIsolated) {
+    console.log("Using Isolated Local Storage Mode (Local Sandbox active)");
     isSharedDb = false;
+    
     const saved = localStorage.getItem("whoissmartest_minds");
     if (saved) {
       try {
@@ -368,20 +372,63 @@ async function initDatabase() {
     } else {
       loadLocalDefaults();
     }
-
-    // Update premium UI badge to show Local Storage state if it exists
+    
+    // Update premium UI badge to show Isolated Local Storage state if it exists
     if (badge) {
-      badge.textContent = "💾 Local Browser Storage";
-      badge.style.background = "rgba(223, 215, 195, 0.06)";
-      badge.style.color = "#dfd7c3";
-      badge.style.borderColor = "rgba(223, 215, 195, 0.2)";
+      badge.textContent = "💾 Isolated Local Storage Mode";
+      badge.style.background = "rgba(239, 68, 68, 0.08)";
+      badge.style.color = "#fca5a5";
+      badge.style.borderColor = "rgba(239, 68, 68, 0.25)";
+    }
+  } else {
+    try {
+      // Attempt to fetch from Vercel Serverless Function
+      const response = await fetch("/api/minds");
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`);
+      }
+      
+      minds = await response.json();
+      isSharedDb = true;
+      
+      // Update premium UI badge to show Global Database state if it exists
+      if (badge) {
+        badge.textContent = "🌐 Connected to Global Leaderboard";
+        badge.style.background = "rgba(74, 222, 128, 0.06)";
+        badge.style.color = "#86efac";
+        badge.style.borderColor = "rgba(74, 222, 128, 0.2)";
+      }
+    } catch (error) {
+      console.warn("Could not connect to shared database. Falling back to local browser storage:", error);
+      
+      // Fallback: load from browser's local storage
+      isSharedDb = false;
+      const saved = localStorage.getItem("whoissmartest_minds");
+      if (saved) {
+        try {
+          minds = JSON.parse(saved);
+        } catch (e) {
+          console.error("Failed to parse local storage minds, loading defaults", e);
+          loadLocalDefaults();
+        }
+      } else {
+        loadLocalDefaults();
+      }
+
+      // Update premium UI badge to show Local Storage state if it exists
+      if (badge) {
+        badge.textContent = "💾 Local Browser Storage (Offline)";
+        badge.style.background = "rgba(223, 215, 195, 0.06)";
+        badge.style.color = "#dfd7c3";
+        badge.style.borderColor = "rgba(223, 215, 195, 0.2)";
+      }
     }
   }
   
   loadNextMatchup();
 }
 
-// Load default 43 minds (local only fallback)
+// Load default 47 minds (local only fallback)
 function loadLocalDefaults() {
   minds = DEFAULT_MINDS.map((m, idx) => ({
     id: idx + 1,
@@ -738,44 +785,52 @@ function renderLeaderboard() {
 }
 
 // ============================================================================
-// Admin Login / Console Panel Logic
+// Suggest a Mind Logic
+// ============================================================================
+async function handleSuggest(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById("suggest-name");
+  const detailsInput = document.getElementById("suggest-details");
+  const msgOk = document.getElementById("suggest-message");
+  const msgErr = document.getElementById("suggest-error");
+
+  msgOk.style.display = "none";
+  msgErr.style.display = "none";
+
+  const name = nameInput.value.trim();
+  const details = detailsInput.value.trim();
+
+  if (!name) return;
+
+  try {
+    const response = await fetch("/api/suggest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, details })
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to submit suggestion.");
+    }
+
+    playChalkSound('click');
+    nameInput.value = "";
+    detailsInput.value = "";
+    msgOk.textContent = `Thank you! Your suggestion for "${name}" has been recorded.`;
+    msgOk.style.display = "block";
+  } catch (err) {
+    msgErr.textContent = err.message;
+    msgErr.style.display = "block";
+  }
+}
+
+// ============================================================================
+// Admin Console Panel Logic
 // ============================================================================
 function renderAdminPanel() {
-  const isLoggedIn = sessionStorage.getItem("admin_logged_in") === "true";
-  
-  if (isLoggedIn) {
-    document.getElementById("admin-login-box").style.display = "none";
-    document.getElementById("admin-panel").style.display = "block";
-    renderAdminMindsList();
-  } else {
-    document.getElementById("admin-login-box").style.display = "block";
-    document.getElementById("admin-panel").style.display = "none";
-    document.getElementById("admin-password").value = "";
-    document.getElementById("login-error").style.display = "none";
-  }
-}
-
-function handleLogin(e) {
-  e.preventDefault();
-  const password = document.getElementById("admin-password").value;
-  
-  // Clean client-side admin password check (matching original default "whoissmartest")
-  if (password === "whoissmartest") {
-    sessionStorage.setItem("admin_logged_in", "true");
-    document.getElementById("login-error").style.display = "none";
-    playChalkSound('click');
-    renderAdminPanel();
-  } else {
-    const errorEl = document.getElementById("login-error");
-    errorEl.textContent = "Wrong password.";
-    errorEl.style.display = "block";
-  }
-}
-
-function handleLogout() {
-  sessionStorage.removeItem("admin_logged_in");
-  playChalkSound('tap');
-  renderAdminPanel();
+  renderAdminMindsList();
 }
 
 function renderAdminMindsList() {
@@ -831,54 +886,40 @@ function handleAddMind(e) {
 
   // Convert image file to base64 Data URL
   const reader = new FileReader();
-  reader.onload = async function(event) {
+  reader.onload = function(event) {
     const base64Data = event.target.result;
 
-    if (isSharedDb) {
-      // POST to /api/minds
-      try {
-        const response = await fetch("/api/minds", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            action: "add",
-            name: name,
-            photo_path: base64Data
-          })
-        });
+    const duplicateName = minds.some(p => p.name.toLowerCase() === name.toLowerCase());
+    if (duplicateName) {
+      msgErr.textContent = `A mind with the name "${name}" already exists.`;
+      msgErr.style.display = "block";
+      return;
+    }
 
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || "Failed to add mind globally");
-        }
+    // Activate Isolated Local Storage Mode
+    localStorage.setItem("whoissmartest_isolated", "true");
+    isSharedDb = false;
 
-        minds = await response.json();
-      } catch (err) {
-        msgErr.textContent = err.message;
-        msgErr.style.display = "block";
-        return;
-      }
-    } else {
-      // Local Storage path
-      const duplicateName = minds.some(p => p.name.toLowerCase() === name.toLowerCase());
-      if (duplicateName) {
-        msgErr.textContent = `A mind with the name "${name}" already exists.`;
-        msgErr.style.display = "block";
-        return;
-      }
+    // Add locally
+    const newId = minds.reduce((max, p) => p.id > max ? p.id : max, 0) + 1;
+    minds.push({
+      id: newId,
+      name: name,
+      photo_path: base64Data,
+      elo: 1400.0,
+      wins: 0,
+      losses: 0
+    });
+    
+    localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
 
-      const newId = minds.reduce((max, p) => p.id > max ? p.id : max, 0) + 1;
-      minds.push({
-        id: newId,
-        name: name,
-        photo_path: base64Data,
-        elo: 1400.0,
-        wins: 0,
-        losses: 0
-      });
-      saveToStorage();
+    // Update the UI status badge
+    const badge = document.getElementById("db-status-badge");
+    if (badge) {
+      badge.textContent = "💾 Isolated Local Storage Mode";
+      badge.style.background = "rgba(239, 68, 68, 0.08)";
+      badge.style.color = "#fca5a5";
+      badge.style.borderColor = "rgba(239, 68, 68, 0.25)";
     }
 
     playChalkSound('click');
@@ -887,7 +928,7 @@ function handleAddMind(e) {
     nameInput.value = "";
     photoInput.value = "";
 
-    msgOk.textContent = `Successfully added "${name}"!`;
+    msgOk.textContent = `Successfully added "${name}"! Switched to Isolated Local Storage Mode (Local Sandbox).`;
     msgOk.style.display = "block";
 
     renderAdminMindsList();
@@ -901,37 +942,26 @@ function handleAddMind(e) {
   reader.readAsDataURL(file);
 }
 
-// Delete mind from LocalStorage / Global Database
-async function deleteMind(id) {
+// Delete mind from LocalStorage Sandbox
+function deleteMind(id) {
   const p = minds.find(el => el.id === id);
   if (!p) return;
 
-  if (confirm(`Delete ${p.name}?`)) {
-    if (isSharedDb) {
-      try {
-        const response = await fetch("/api/minds", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            action: "delete",
-            id: id
-          })
-        });
+  if (confirm(`Delete ${p.name}? This will remove them locally and switch your device to Isolated Local Storage Mode.`)) {
+    // Activate Isolated Local Storage Mode
+    localStorage.setItem("whoissmartest_isolated", "true");
+    isSharedDb = false;
 
-        if (!response.ok) {
-          throw new Error("Failed to delete mind globally");
-        }
+    minds = minds.filter(el => el.id !== id);
+    localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
 
-        minds = await response.json();
-      } catch (err) {
-        alert(err.message);
-        return;
-      }
-    } else {
-      minds = minds.filter(el => el.id !== id);
-      saveToStorage();
+    // Update the UI status badge
+    const badge = document.getElementById("db-status-badge");
+    if (badge) {
+      badge.textContent = "💾 Isolated Local Storage Mode";
+      badge.style.background = "rgba(239, 68, 68, 0.08)";
+      badge.style.color = "#fca5a5";
+      badge.style.borderColor = "rgba(239, 68, 68, 0.25)";
     }
 
     playChalkSound('click');
@@ -939,33 +969,23 @@ async function deleteMind(id) {
   }
 }
 
-// Clear all minds
-async function clearAllMinds() {
-  if (confirm("DELETE ALL MINDS? This will permanently delete all minds and votes globally!")) {
-    if (isSharedDb) {
-      try {
-        const response = await fetch("/api/minds", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            action: "clear"
-          })
-        });
+// Clear all minds locally
+function clearAllMinds() {
+  if (confirm("DELETE ALL MINDS? This will permanently delete all minds from your local sandbox and switch your device to Isolated Local Storage Mode.")) {
+    // Activate Isolated Local Storage Mode
+    localStorage.setItem("whoissmartest_isolated", "true");
+    isSharedDb = false;
 
-        if (!response.ok) {
-          throw new Error("Failed to clear database globally");
-        }
+    minds = [];
+    localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
 
-        minds = await response.json();
-      } catch (err) {
-        alert(err.message);
-        return;
-      }
-    } else {
-      minds = [];
-      saveToStorage();
+    // Update the UI status badge
+    const badge = document.getElementById("db-status-badge");
+    if (badge) {
+      badge.textContent = "💾 Isolated Local Storage Mode";
+      badge.style.background = "rgba(239, 68, 68, 0.08)";
+      badge.style.color = "#fca5a5";
+      badge.style.borderColor = "rgba(239, 68, 68, 0.25)";
     }
 
     playChalkSound('click');
@@ -973,40 +993,24 @@ async function clearAllMinds() {
   }
 }
 
-// Reset minds back to the default 43 scientists
+// Reset minds back to the default 47 scientists
 async function resetToDefaults() {
-  if (confirm("Reset database to default 43 minds? This will overwrite all scores and custom additions.")) {
-    if (isSharedDb) {
-      try {
-        const response = await fetch("/api/minds", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            action: "reset"
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to reset database globally");
-        }
-
-        minds = await response.json();
-      } catch (err) {
-        alert(err.message);
-        return;
-      }
-    } else {
-      loadLocalDefaults();
-    }
+  if (confirm("Reset to default 47 minds? This will erase your custom changes, turn off Isolated Mode, and reconnect you to the global synced leaderboard.")) {
+    // De-activate Isolated Local Storage Mode
+    localStorage.removeItem("whoissmartest_isolated");
+    localStorage.removeItem("whoissmartest_minds");
+    
+    // Re-initialize from global database
+    await initDatabase();
 
     playChalkSound('click');
     renderAdminMindsList();
     
     const msgOk = document.getElementById("admin-message");
-    msgOk.textContent = "Reset database to default 43 minds successfully!";
-    msgOk.style.display = "block";
+    if (msgOk) {
+      msgOk.textContent = "Successfully reconnected to the Global Leaderboard and synced default ratings!";
+      msgOk.style.display = "block";
+    }
   }
 }
 
