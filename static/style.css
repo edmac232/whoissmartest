@@ -184,12 +184,46 @@ a:hover {
 
 @media (max-width: 768px) {
     #vote-table tr {
-        flex-direction: column;
-        gap: 30px;
+        flex-direction: row;
+        gap: 12px;
+        justify-content: center;
     }
     #vote-table td.or-cell {
-        transform: rotate(90deg);
-        margin: -10px 0;
+        transform: none;
+        width: 38px;
+        height: 38px;
+        font-size: 11px;
+        flex: 0 0 38px;
+        margin: 0;
+    }
+    .vote-candidate-card {
+        padding: 8px;
+        max-width: 46%;
+    }
+    .vote-photo-btn img {
+        height: 35vw !important; /* Highly responsive height to ensure zero vertical scrolling on mobile phones */
+        max-height: 180px;
+        min-height: 120px;
+    }
+    .person-name {
+        font-size: 14px !important;
+        margin-top: 6px !important;
+        margin-bottom: 4px !important;
+    }
+    .person-stats {
+        font-size: 10px !important;
+        padding: 3px 6px !important;
+        gap: 4px !important;
+    }
+    #vote-prompt {
+        font-size: 20px !important;
+        margin-bottom: 12px !important;
+    }
+    body {
+        padding: 10px 6px !important;
+    }
+    #content {
+        padding: 16px 8px !important;
     }
 }
 

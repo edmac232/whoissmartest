@@ -104,6 +104,20 @@ export default async function handler(req, res) {
     // 1. Handle GET: Retrieve all minds
     if (req.method === "GET") {
       let minds = await querySupabase("persons?select=*&order=id.asc");
+      
+      // Auto-seed database with default 43 minds on first load if empty
+      if (!minds || minds.length === 0) {
+        const payload = DEFAULT_MINDS.map(m => ({
+          name: m.name,
+          photo_path: m.photo_path,
+          elo: 1400.0,
+          wins: 0,
+          losses: 0
+        }));
+        await querySupabase("persons", "POST", payload);
+        minds = await querySupabase("persons?select=*&order=id.asc");
+      }
+      
       return res.status(200).json(minds || []);
     }
 
