@@ -1,59 +1,163 @@
 {% extends "base.html" %}
-{% block title %} &mdash; Who's Hotter?{% endblock %}
+{% block title %} &mdash; Who's Smarter?{% endblock %}
 
 {% block content %}
 
   {% if person_a and person_b %}
 
-  <p id="vote-prompt">Who's Hotter? Click to Choose.</p>
+  <p id="vote-prompt">Who's Smarter? Click to choose or use arrow keys.</p>
 
   <table id="vote-table">
     <tr>
 
       <!-- Person A -->
       <td>
-        <form method="POST" action="{{ url_for('vote') }}">
-          <input type="hidden" name="winner_id" value="{{ person_a.id }}">
-          <input type="hidden" name="loser_id"  value="{{ person_b.id }}">
-          <button class="vote-photo-btn" type="submit">
-            <img src="{{ url_for('static', filename=person_a.photo_path) }}"
-                 alt="{{ person_a.name }}">
-          </button>
-          <div class="person-name">{{ person_a.name }}</div>
-          <div class="person-stats">
-            Elo: {{ person_a.elo | int }} &nbsp;&bull;&nbsp;
-            {{ person_a.wins }}W / {{ person_a.losses }}L
-          </div>
-        </form>
+        <div class="vote-candidate-card" id="card-a">
+          <form id="form-a" method="POST" action="{{ url_for('vote') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="winner_id" value="{{ person_a.id }}">
+            <input type="hidden" name="loser_id"  value="{{ person_b.id }}">
+            <button class="vote-photo-btn" type="submit">
+              <img src="{{ url_for('static', filename=person_a.photo_path) }}"
+                   alt="{{ person_a.name }}">
+            </button>
+            <div class="person-name">{{ person_a.name }}</div>
+            <div class="person-stats">
+              <span class="stat-elo">Elo {{ person_a.elo | int }}</span> &bull;
+              <span>{{ person_a.wins }}W</span> &bull;
+              <span>{{ person_a.losses }}L</span>
+            </div>
+            <div class="keyboard-hint"><kbd>←</kbd> Press Left Arrow</div>
+          </form>
+        </div>
       </td>
 
-      <!-- OR -->
-      <td class="or-cell">OR</td>
+      <!-- VS -->
+      <td class="or-cell">VS</td>
 
       <!-- Person B -->
       <td>
-        <form method="POST" action="{{ url_for('vote') }}">
-          <input type="hidden" name="winner_id" value="{{ person_b.id }}">
-          <input type="hidden" name="loser_id"  value="{{ person_a.id }}">
-          <button class="vote-photo-btn" type="submit">
-            <img src="{{ url_for('static', filename=person_b.photo_path) }}"
-                 alt="{{ person_b.name }}">
-          </button>
-          <div class="person-name">{{ person_b.name }}</div>
-          <div class="person-stats">
-            Elo: {{ person_b.elo | int }} &nbsp;&bull;&nbsp;
-            {{ person_b.wins }}W / {{ person_b.losses }}L
-          </div>
-        </form>
+        <div class="vote-candidate-card" id="card-b">
+          <form id="form-b" method="POST" action="{{ url_for('vote') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="winner_id" value="{{ person_b.id }}">
+            <input type="hidden" name="loser_id"  value="{{ person_a.id }}">
+            <button class="vote-photo-btn" type="submit">
+              <img src="{{ url_for('static', filename=person_b.photo_path) }}"
+                   alt="{{ person_b.name }}">
+            </button>
+            <div class="person-name">{{ person_b.name }}</div>
+            <div class="person-stats">
+              <span class="stat-elo">Elo {{ person_b.elo | int }}</span> &bull;
+              <span>{{ person_b.wins }}W</span> &bull;
+              <span>{{ person_b.losses }}L</span>
+            </div>
+            <div class="keyboard-hint"><kbd>→</kbd> Press Right Arrow</div>
+          </form>
+        </div>
       </td>
 
     </tr>
   </table>
 
+  <script>
+    // Speech synthesis for matchup name reading
+    function speakMatchup() {
+      if ('speechSynthesis' in window) {
+        // Cancel any pending/ongoing speech first
+        window.speechSynthesis.cancel();
+        
+        const nameA = {{ person_a.name | tojson }};
+        const nameB = {{ person_b.name | tojson }};
+        const text = `${nameA} versus ${nameB}`;
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95; // Slightly slower for an elegant, distinguished academic tone
+        utterance.pitch = 1.0;
+        
+        // Speak!
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Try to speak on page load. Note: browsers might block autoplay
+    // if there's no user interaction yet.
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', speakMatchup);
+    } else {
+      speakMatchup();
+    }
+
+    // Since browsers may block speech synthesis until first user interaction,
+    // we also speak on the first keyboard event or mouse interaction if not spoken already.
+    let spoken = false;
+    const triggerSpeechOnce = () => {
+      if (!spoken) {
+        speakMatchup();
+        spoken = true;
+      }
+      // Remove listeners once spoken
+      window.removeEventListener('keydown', triggerSpeechOnce);
+      window.removeEventListener('click', triggerSpeechOnce);
+    };
+    window.addEventListener('keydown', triggerSpeechOnce);
+    window.addEventListener('click', triggerSpeechOnce);
+
+    // Vote Handler helper (applies visual active state, audio feedback, cancels speech, submits form)
+    function submitVote(choice) {
+      const cardId = choice === 'A' ? 'card-a' : 'card-b';
+      const formId = choice === 'A' ? 'form-a' : 'form-b';
+      
+      const card = document.getElementById(cardId);
+      const form = document.getElementById(formId);
+      
+      if (!card || !form) return;
+      
+      // Stop speaking immediately
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      
+      // Visual feedback
+      card.classList.add('keyboard-active');
+      
+      // Play sound
+      if (window.playChalkSound) {
+        window.playChalkSound('click');
+      }
+      
+      // Short delay for sound/visual effect to render before redirect
+      setTimeout(() => {
+        form.submit();
+      }, 180);
+    }
+
+    // Attach click events to the photo buttons
+    document.querySelectorAll('.vote-photo-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const card = this.closest('.vote-candidate-card');
+        const choice = card.id === 'card-a' ? 'A' : 'B';
+        submitVote(choice);
+      });
+    });
+
+    // Keyboard Arrow Key listeners
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        submitVote('A');
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        submitVote('B');
+      }
+    });
+  </script>
+
   {% else %}
 
   <div id="no-photos">
-    <p>No photos yet. <a href="{{ url_for('login') }}">Add some</a> to get started.</p>
+    <p>No minds in the database yet. <a href="{{ url_for('login') }}">Add some</a> to get started.</p>
   </div>
 
   {% endif %}

@@ -11,6 +11,7 @@
   <p class="msg-err">{{ error }}</p>
   {% endif %}
   <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <div class="field">
       <label>Name <span style="color:#aaa;font-size:9px;text-transform:none;">(single upload only)</span></label>
       <input type="text" name="name" id="name-field">
@@ -28,7 +29,13 @@
 
 {% if persons %}
 <div id="upload-list">
-  <h3>All photos ({{ persons | length }})</h3>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom: 1px solid rgba(223, 215, 195, 0.2); padding-bottom: 6px;">
+    <h3 style="border-bottom:none; margin-bottom:0; padding-bottom:0; color:#dfd7c3; font-size:14px; font-weight:600;">All photos ({{ persons | length }})</h3>
+    <form method="POST" action="{{ url_for('clear_all') }}" onsubmit="return confirm('DELETE ALL PHOTOS? This will permanently delete all minds and votes!')">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <button class="btn-small" style="background-color:rgba(239, 68, 68, 0.08); color:#fca5a5; border-color:rgba(248, 113, 113, 0.15);" type="submit">Clear All Photos</button>
+    </form>
+  </div>
   <table>
     {% for p in persons %}
     <tr>
@@ -38,6 +45,7 @@
       <td style="text-align:right;">
         <form method="POST" action="{{ url_for('delete_person', person_id=p.id) }}"
               onsubmit="return confirm('Delete {{ p.name }}?')">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button class="btn-small" type="submit">delete</button>
         </form>
       </td>

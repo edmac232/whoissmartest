@@ -1,3 +1,11 @@
+/* ==========================================================================
+   Google Fonts Import (Lora for elegant academic serif, Outfit for clean headings)
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Outfit:wght@300..800&family=Fira+Code:wght@400..600&display=swap');
+
+/* ==========================================================================
+   Reset & Base Styles
+   ========================================================================== */
 * {
     margin: 0;
     padding: 0;
@@ -5,318 +13,638 @@
 }
 
 body {
-    background-color: #d6d0c4;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 13px;
-    color: #222222;
+    /* Pure charcoal base color with our faint scientific chalkboard background */
+    background-color: #1a1c1e;
+    background-image: 
+        linear-gradient(rgba(26, 28, 30, 0.94), rgba(26, 28, 30, 0.94)), 
+        url('smarter_blackboard_bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 30px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.5;
 }
 
 a {
-    color: #0000cc;
-    text-decoration: underline;
+    color: #dfd7c3; /* Antique chalk gold */
+    text-decoration: none;
+    transition: color 0.15s ease;
+    border-bottom: 1px dotted rgba(223, 215, 195, 0.4);
 }
 
 a:hover {
-    color: #cc0000;
+    color: #ffffff;
+    border-bottom-style: dashed;
 }
 
-/* ── Outer shell ── */
-
+/* ==========================================================================
+   Outer Shell (Clean Slate Frame)
+   ========================================================================== */
 #shell {
-    width: 520px;
-    margin: 30px auto;
-    background-color: #f2ede4;
-    border: 1px solid #b0a898;
+    width: 100%;
+    max-width: 880px;
+    background: rgba(22, 24, 26, 0.95); /* Solid slate background, no gradient */
+    border: 1px solid rgba(223, 215, 195, 0.25); /* Thin antique gold border */
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-/* ── Header ── */
-
+/* ==========================================================================
+   Header & Navigation
+   ========================================================================== */
 #header {
-    background-color: #c8bfae;
-    border-bottom: 2px solid #a09080;
-    padding: 10px 0 8px 0;
+    background: #141517;
+    border-bottom: 1px solid rgba(223, 215, 195, 0.25);
+    padding: 24px 20px;
     text-align: center;
 }
 
 #header h1 {
     font-size: 32px;
-    font-weight: bold;
-    color: #8b1a1a;
+    font-weight: 700;
+    color: #ffffff; /* Clean white */
     letter-spacing: 3px;
     text-transform: uppercase;
-    font-family: Arial Black, Arial, Helvetica, sans-serif;
+    font-family: 'Outfit', sans-serif;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 #header-nav {
-    font-size: 10px;
-    color: #888888;
-    margin-top: 3px;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
 }
 
 #header-nav a {
-    color: #666666;
-    margin: 0 6px;
-    text-decoration: none;
-    font-size: 10px;
+    color: #94a3b8;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 11px;
+    padding: 4px 8px;
+    border: none;
+    transition: all 0.15s ease;
 }
 
 #header-nav a:hover {
-    color: #8b1a1a;
-    text-decoration: underline;
+    color: #dfd7c3;
 }
 
-/* ── Subheader ── */
-
+/* ==========================================================================
+   Subheader
+   ========================================================================== */
 #subheader {
-    background-color: #ece7dc;
-    border-bottom: 1px solid #c8bfae;
-    padding: 7px 16px;
-    font-size: 12px;
-    color: #444444;
+    background: #18191b;
+    border-bottom: 1px solid rgba(223, 215, 195, 0.12);
+    padding: 12px 24px;
+    font-size: 14px;
+    color: #cbd5e1;
     text-align: center;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    letter-spacing: 0.5px;
 }
 
-/* ── Body content ── */
-
+/* ==========================================================================
+   Body Content Container
+   ========================================================================== */
 #content {
-    padding: 16px 20px 20px 20px;
+    padding: 30px 40px;
+    flex-grow: 1;
 }
 
-/* ── Vote page ── */
+@media (max-width: 640px) {
+    #content {
+        padding: 20px 16px;
+    }
+}
 
+/* ==========================================================================
+   Vote View (Mindmash Comparison)
+   ========================================================================== */
 #vote-prompt {
     text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    color: #222222;
-    margin-bottom: 16px;
+    font-size: 20px;
+    font-weight: 500;
+    color: #ffffff;
+    margin-bottom: 26px;
+    letter-spacing: 0.5px;
 }
 
 #vote-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+}
+
+#vote-table tr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
 }
 
 #vote-table td {
-    text-align: center;
-    vertical-align: middle;
-    padding: 4px 6px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-td.or-cell {
-    width: 40px;
-    font-size: 13px;
-    font-weight: bold;
-    color: #555555;
+/* Authentic Slate Divider (VS) */
+#vote-table td.or-cell {
+    flex: 0 0 54px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #dfd7c3;
+    background: #141517;
+    border: 1px solid rgba(223, 215, 195, 0.3);
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fira Code', monospace;
+    user-select: none;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    #vote-table tr {
+        flex-direction: column;
+        gap: 30px;
+    }
+    #vote-table td.or-cell {
+        transform: rotate(90deg);
+        margin: -10px 0;
+    }
+}
+
+/* Clean Slate Cards */
+.vote-candidate-card {
+    width: 100%;
+    max-width: 310px;
+    background: #18191b;
+    border: 1px solid rgba(223, 215, 195, 0.15); /* Clean border, no AI glows */
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    transition: all 0.2s ease-out;
+}
+
+.vote-candidate-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(223, 215, 195, 0.45);
+    background: #1e2022;
 }
 
 .vote-photo-btn {
     background: none;
-    border: 2px solid transparent;
+    border: none;
     cursor: pointer;
     padding: 0;
-    display: inline-block;
-}
-
-.vote-photo-btn:hover {
-    border-color: #8b1a1a;
+    display: block;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .vote-photo-btn img {
     display: block;
-    width: 210px;
-    height: 230px;
+    width: 100%;
+    height: 270px;
     object-fit: cover;
+    transition: filter 0.2s ease;
+    filter: brightness(0.88);
+}
+
+.vote-candidate-card:hover .vote-photo-btn img {
+    filter: brightness(0.98);
 }
 
 .person-name {
-    font-size: 12px;
-    color: #0000cc;
-    margin-top: 5px;
-    text-decoration: underline;
-    cursor: pointer;
+    font-family: 'Lora', serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+.vote-candidate-card:hover .person-name {
+    color: #dfd7c3;
 }
 
 .person-stats {
-    font-size: 10px;
-    color: #888888;
-    margin-top: 2px;
+    font-size: 13px;
+    color: #94a3b8;
+    background: #121314;
+    padding: 5px 12px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Fira Code', monospace;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.person-stats .stat-elo {
+    color: #dfd7c3;
+    font-weight: 500;
 }
 
 #no-photos {
     text-align: center;
-    color: #888888;
-    padding: 30px 0;
+    color: #94a3b8;
+    padding: 60px 0;
 }
 
-/* ── Leaderboard ── */
+#no-photos p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
 
+/* ==========================================================================
+   Leaderboard View
+   ========================================================================== */
 #leaderboard-title {
-    font-size: 15px;
-    font-weight: bold;
-    color: #333333;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #c8bfae;
-    padding-bottom: 5px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(223, 215, 195, 0.25);
 }
 
 #leaderboard-table {
     width: 100%;
     border-collapse: collapse;
+    background: #18191b;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(223, 215, 195, 0.15);
 }
 
 #leaderboard-table th {
-    background-color: #ddd8cc;
-    color: #555555;
-    font-size: 10px;
+    background-color: #141517;
+    color: #dfd7c3;
+    font-size: 11px;
+    font-weight: 600;
     text-align: left;
-    padding: 4px 7px;
-    border-bottom: 1px solid #c8bfae;
-    font-weight: normal;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(223, 215, 195, 0.2);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
 }
 
 #leaderboard-table td {
-    padding: 5px 7px;
-    border-bottom: 1px solid #e0dbd2;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     vertical-align: middle;
-    color: #333333;
-    font-size: 12px;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+#leaderboard-table tr:last-child td {
+    border-bottom: none;
 }
 
 #leaderboard-table tr:hover td {
-    background-color: #ebe6dc;
+    background-color: rgba(223, 215, 195, 0.03);
 }
 
-.lb-rank   { color: #999999; font-size: 11px; width: 28px; }
-.lb-thumb  { width: 36px; height: 36px; object-fit: cover; }
-.lb-name   { font-weight: bold; }
-.lb-elo    { color: #8b1a1a; font-weight: bold; }
-.lb-wins   { color: #226622; }
-.lb-losses { color: #882222; }
+.lb-rank {
+    font-weight: 600;
+    width: 40px;
+    color: #94a3b8;
+}
 
-/* ── Forms (upload / login) ── */
+/* Understated Scholarly Medals */
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.rank-1 { background: rgba(223, 215, 195, 0.2); color: #ffffff; border: 1px solid #dfd7c3; } /* Gold/Chalk */
+.rank-2 { background: rgba(148, 163, 184, 0.15); color: #e2e8f0; border: 1px solid #94a3b8; } /* Silver/Chalk */
+.rank-3 { background: rgba(180, 83, 9, 0.1); color: #decbb7; border: 1px solid rgba(223, 215, 195, 0.3); } /* Bronze */
+.rank-other { color: #94a3b8; }
 
+.lb-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lb-name {
+    font-family: 'Lora', serif;
+    font-weight: 500;
+    font-size: 15px;
+    color: #ffffff;
+}
+
+.lb-elo {
+    color: #dfd7c3;
+    font-weight: 600;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+}
+
+.lb-wins {
+    color: #86efac; /* Subtle clean green */
+    font-family: 'Fira Code', monospace;
+}
+
+.lb-losses {
+    color: #fca5a5; /* Subtle clean red */
+    font-family: 'Fira Code', monospace;
+}
+
+.lb-wl {
+    color: #94a3b8;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+}
+
+/* ==========================================================================
+   Forms (Upload / Login)
+   ========================================================================== */
 #form-box {
-    max-width: 400px;
+    max-width: 440px;
     margin: 0 auto;
+    background: #18191b;
+    border: 1px solid rgba(223, 215, 195, 0.15);
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
 #form-box h2 {
-    font-size: 14px;
-    color: #444444;
-    margin-bottom: 14px;
-    border-bottom: 1px solid #c8bfae;
-    padding-bottom: 6px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 18px;
+    border-bottom: 1px solid rgba(223, 215, 195, 0.2);
+    padding-bottom: 8px;
 }
 
 .field {
-    margin-bottom: 10px;
+    margin-bottom: 16px;
 }
 
 .field label {
     display: block;
-    font-size: 10px;
-    color: #777777;
+    font-size: 11px;
+    color: #dfd7c3;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 3px;
+    margin-bottom: 6px;
+    font-weight: 600;
 }
 
 .field input[type="text"],
 .field input[type="password"],
 .field input[type="file"] {
     width: 100%;
-    background-color: #ffffff;
-    border: 1px solid #b0a898;
-    color: #222222;
-    padding: 4px 6px;
-    font-size: 12px;
-    font-family: Arial, Helvetica, sans-serif;
+    background-color: #121314;
+    border: 1px solid rgba(223, 215, 195, 0.15);
+    border-radius: 4px;
+    color: #ffffff;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+}
+
+.field input[type="text"]:focus,
+.field input[type="password"]:focus {
+    outline: none;
+    border-color: #dfd7c3;
+    background-color: #141517;
+}
+
+.field input[type="file"] {
+    padding: 6px;
+    cursor: pointer;
 }
 
 .field small {
     display: block;
-    color: #999999;
-    font-size: 10px;
-    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 11px;
+    margin-top: 5px;
 }
 
 .btn {
-    background-color: #8b1a1a;
-    color: #ffffff;
+    background-color: #dfd7c3;
+    color: #141517;
     border: none;
-    padding: 5px 16px;
-    font-size: 12px;
+    border-radius: 4px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: inherit;
+    width: 100%;
+    transition: background-color 0.15s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .btn:hover {
-    background-color: #aa2222;
+    background-color: #ffffff;
 }
 
 .btn-small {
-    background-color: #dddddd;
-    color: #666666;
-    border: 1px solid #b0a898;
-    padding: 2px 7px;
-    font-size: 10px;
+    background-color: rgba(248, 113, 113, 0.08);
+    color: #fca5a5;
+    border: 1px solid rgba(248, 113, 113, 0.15);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
     cursor: pointer;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: inherit;
+    transition: all 0.15s ease;
 }
 
 .btn-small:hover {
-    background-color: #cc8888;
+    background-color: #ef4444;
     color: #ffffff;
-    border-color: #aa4444;
+    border-color: #ef4444;
 }
 
-.msg-ok  { color: #226622; font-size: 12px; margin-bottom: 10px; }
-.msg-err { color: #882222; font-size: 12px; margin-bottom: 10px; }
+.msg-ok {
+    color: #86efac;
+    background: rgba(74, 222, 128, 0.06);
+    border: 1px solid rgba(74, 222, 128, 0.15);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
 
-/* ── Upload person list ── */
+.msg-err {
+    color: #fca5a5;
+    background: rgba(248, 113, 113, 0.06);
+    border: 1px solid rgba(248, 113, 113, 0.15);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
 
+/* ==========================================================================
+   Upload List View
+   ========================================================================== */
 #upload-list {
-    margin-top: 22px;
+    margin-top: 30px;
 }
 
 #upload-list h3 {
-    font-size: 12px;
-    color: #777777;
-    margin-bottom: 6px;
-    border-bottom: 1px solid #c8bfae;
-    padding-bottom: 3px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #dfd7c3;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(223, 215, 195, 0.2);
+    padding-bottom: 6px;
 }
 
 #upload-list table {
     width: 100%;
     border-collapse: collapse;
+    background: #18191b;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid rgba(223, 215, 195, 0.12);
 }
 
 #upload-list td {
-    padding: 4px 7px;
-    border-bottom: 1px solid #e0dbd2;
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     vertical-align: middle;
-    font-size: 12px;
-    color: #333333;
+    font-size: 13px;
+    color: #cbd5e1;
+}
+
+#upload-list tr:last-child td {
+    border-bottom: none;
 }
 
 #upload-list img {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
+    border-radius: 4px;
     object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* ── Footer ── */
-
+/* ==========================================================================
+   Footer
+   ========================================================================== */
 #footer {
-    border-top: 1px solid #c8bfae;
-    padding: 6px 0;
-    font-size: 10px;
-    color: #999999;
+    border-top: 1px solid rgba(223, 215, 195, 0.25);
+    padding: 16px 20px;
+    font-size: 11px;
+    color: #94a3b8;
     text-align: center;
-    background-color: #ddd8cc;
+    background: #141517;
+    font-family: 'Fira Code', monospace;
+    letter-spacing: 0.5px;
 }
+
+/* ==========================================================================
+   Keyboard & Selection Features
+   ========================================================================== */
+.vote-candidate-card.keyboard-active {
+    transform: scale(1.03) translateY(-4px);
+    border-color: #dfd7c3 !important;
+    background: #25272a !important;
+    box-shadow: 0 0 15px rgba(223, 215, 195, 0.2);
+}
+
+.keyboard-hint {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #94a3b8;
+    opacity: 0.75;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: 'Outfit', sans-serif;
+    user-select: none;
+}
+
+.keyboard-hint kbd {
+    background: #121314;
+    border: 1px solid rgba(223, 215, 195, 0.3);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: #dfd7c3;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* ==========================================================================
+   Mobile Responsiveness Enhancements
+   ========================================================================== */
+@media (max-width: 600px) {
+    /* Hide detailed stats on mobile leaderboard to avoid horizontal overflow */
+    #leaderboard-table th:nth-child(5), /* Wins */
+    #leaderboard-table td:nth-child(5),
+    #leaderboard-table th:nth-child(6), /* Losses */
+    #leaderboard-table td:nth-child(6),
+    #leaderboard-table th:nth-child(7), /* W/L Ratio */
+    #leaderboard-table td:nth-child(7) {
+        display: none;
+    }
+
+    /* Hide detailed stats in admin upload list on mobile */
+    #upload-list td:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 12px 8px;
+    }
+    #header h1 {
+        font-size: 24px;
+        letter-spacing: 1.5px;
+    }
+    #subheader {
+        font-size: 12px;
+        padding: 10px 16px;
+    }
+    #header-nav {
+        gap: 10px;
+    }
+    .keyboard-hint {
+        display: none; /* Hide keyboard hints on mobile touch screens */
+    }
+}
+
+

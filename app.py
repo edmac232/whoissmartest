@@ -1,15 +1,19 @@
 import os
 import random
+import secrets
+import hashlib
 import sqlite3
 import uuid
 from datetime import datetime
 
-from flask import (Flask, g, redirect, render_template, request,
+from flask import (Flask, abort, g, redirect, render_template, request,
                    session, url_for)
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
+# Secure fallback for session keys
+app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
+app.config["MAX_CONTENT_LENGTH"] = 32 * 1024 * 1024  # 32MB file upload limit
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "facemash")
 DATABASE = os.path.join(app.instance_path, "facemash.db")
@@ -18,6 +22,30 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 
 os.makedirs(app.instance_path, exist_ok=True)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+# ---------------------------------------------------------------------------
+# Security Middleware (CSRF Protection)
+# ---------------------------------------------------------------------------
+
+@app.before_request
+def csrf_protect():
+    # Make sure session has a CSRF token
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(32)
+    
+    # Check CSRF token on POST requests
+    if request.method == "POST":
+        token = request.form.get("csrf_token")
+        if not token or token != session.get("csrf_token"):
+            # CSRF token mismatch! Abort with 400 Bad Request
+            abort(400, "CSRF token missing or invalid.")
+
+
+@app.context_processor
+def inject_csrf_token():
+    return dict(csrf_token=session.get("csrf_token"))
+
 
 
 # ---------------------------------------------------------------------------
@@ -45,6 +73,7 @@ def init_db():
             id        INTEGER PRIMARY KEY AUTOINCREMENT,
             name      TEXT    NOT NULL,
             photo_path TEXT   NOT NULL,
+            photo_hash TEXT   NOT NULL DEFAULT '',
             elo       REAL    NOT NULL DEFAULT 1400.0,
             wins      INTEGER NOT NULL DEFAULT 0,
             losses    INTEGER NOT NULL DEFAULT 0
@@ -56,6 +85,25 @@ def init_db():
             timestamp  TEXT    NOT NULL
         );
     """)
+    db.commit()
+
+    try:
+        db.execute("ALTER TABLE persons ADD COLUMN photo_hash TEXT NOT NULL DEFAULT ''")
+        db.commit()
+    except sqlite3.OperationalError:
+        pass
+
+    # Backfill missing photo hashes for previously uploaded images
+    persons = db.execute("SELECT id, photo_path FROM persons WHERE photo_hash = '' OR photo_hash IS NULL").fetchall()
+    for p in persons:
+        photo_file = os.path.join(app.static_folder, p["photo_path"])
+        if os.path.exists(photo_file):
+            try:
+                with open(photo_file, "rb") as fh:
+                    file_hash = hashlib.sha256(fh.read()).hexdigest()
+                db.execute("UPDATE persons SET photo_hash = ? WHERE id = ?", (file_hash, p["id"]))
+            except Exception:
+                pass
     db.commit()
 
 
@@ -180,19 +228,50 @@ def upload():
                 error = f"Unsupported file type(s): {', '.join(bad)}"
             else:
                 added = []
+                skipped = []
+                seen_hashes_in_request = set()
                 for f in files:
                     person_name = name if (len(files) == 1 and name) else \
                         f.filename.rsplit(".", 1)[0].replace("_", " ").replace("-", " ")
+                    
+                    # Read file content and calculate hash
+                    file_data = f.read()
+                    file_hash = hashlib.sha256(file_data).hexdigest()
+                    f.seek(0)  # Reset stream pointer for standard saving
+                    
+                    # Check for duplicates within the current upload selection
+                    if file_hash in seen_hashes_in_request:
+                        skipped.append(f"{person_name} (duplicate in selection)")
+                        continue
+                    
+                    # Verify duplicate check in database
+                    existing = db.execute("SELECT id, name FROM persons WHERE photo_hash = ?", (file_hash,)).fetchone()
+                    if existing:
+                        skipped.append(f"{person_name} (matches {existing['name']})")
+                        continue
+                    
+                    seen_hashes_in_request.add(file_hash)
+                    
                     ext = f.filename.rsplit(".", 1)[1].lower()
                     fname = f"{uuid.uuid4().hex}.{ext}"
                     f.save(os.path.join(UPLOAD_FOLDER, fname))
                     db.execute(
-                        "INSERT INTO persons (name, photo_path) VALUES (?, ?)",
-                        (person_name, f"uploads/{fname}"),
+                        "INSERT INTO persons (name, photo_path, photo_hash) VALUES (?, ?, ?)",
+                        (person_name, f"uploads/{fname}", file_hash),
                     )
                     added.append(person_name)
                 db.commit()
-                message = f"Added: {', '.join(added)}."
+                
+                msg_parts = []
+                if added:
+                    msg_parts.append(f"Added: {', '.join(added)}")
+                if skipped:
+                    msg_parts.append(f"Skipped duplicate(s): {', '.join(skipped)}")
+                
+                if added:
+                    message = ". ".join(msg_parts) + "."
+                else:
+                    error = ". ".join(msg_parts) + "."
 
     persons = db.execute("SELECT * FROM persons ORDER BY id DESC").fetchall()
     return render_template("upload.html", persons=persons, message=message, error=error)
@@ -217,5 +296,28 @@ def delete_person(person_id):
     return redirect(url_for("upload"))
 
 
+@app.route("/clear_all", methods=["POST"])
+def clear_all():
+    if not session.get("admin"):
+        return redirect(url_for("login"))
+    
+    db = get_db()
+    
+    # Delete all physical photos from static/uploads/
+    persons = db.execute("SELECT photo_path FROM persons").fetchall()
+    for p in persons:
+        photo_file = os.path.join(app.static_folder, p["photo_path"])
+        if os.path.exists(photo_file):
+            try:
+                os.remove(photo_file)
+            except Exception:
+                pass
+                
+    db.execute("DELETE FROM persons")
+    db.execute("DELETE FROM votes")
+    db.commit()
+    return redirect(url_for("upload"))
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
