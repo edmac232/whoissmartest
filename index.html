@@ -341,11 +341,13 @@ async function initDatabase() {
     minds = await response.json();
     isSharedDb = true;
     
-    // Update premium UI badge to show Global Database state
-    badge.textContent = "🌐 Global Leaderboard";
-    badge.style.background = "rgba(74, 222, 128, 0.06)";
-    badge.style.color = "#86efac";
-    badge.style.borderColor = "rgba(74, 222, 128, 0.2)";
+    // Update premium UI badge to show Global Database state if it exists
+    if (badge) {
+      badge.textContent = "🌐 Global Leaderboard";
+      badge.style.background = "rgba(74, 222, 128, 0.06)";
+      badge.style.color = "#86efac";
+      badge.style.borderColor = "rgba(74, 222, 128, 0.2)";
+    }
   } catch (error) {
     console.warn("Could not connect to shared database. Falling back to local browser storage:", error);
     
@@ -363,11 +365,13 @@ async function initDatabase() {
       loadLocalDefaults();
     }
 
-    // Update premium UI badge to show Local Storage state
-    badge.textContent = "💾 Local Browser Storage";
-    badge.style.background = "rgba(223, 215, 195, 0.06)";
-    badge.style.color = "#dfd7c3";
-    badge.style.borderColor = "rgba(223, 215, 195, 0.2)";
+    // Update premium UI badge to show Local Storage state if it exists
+    if (badge) {
+      badge.textContent = "💾 Local Browser Storage";
+      badge.style.background = "rgba(223, 215, 195, 0.06)";
+      badge.style.color = "#dfd7c3";
+      badge.style.borderColor = "rgba(223, 215, 195, 0.2)";
+    }
   }
   
   loadNextMatchup();
