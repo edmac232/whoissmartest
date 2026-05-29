@@ -44,34 +44,47 @@ const DEFAULT_MINDS = [
   { name: "Wolfgang Pauli", photo_path: "scientist-pics/Wolfgang Pauli.jpg" }
 ];
 
-const KV_KEY = "whoissmartest_minds_v1";
+// Helper for Supabase REST API requests
+async function querySupabase(endpoint, method = "GET", body = null) {
+  const url = `${process.env.SUPABASE_URL}/rest/v1/${endpoint}`;
+  const apiKey = process.env.SUPABASE_ANON_KEY;
 
-// Helper to query Vercel KV REST API
-async function queryKV(command, args = []) {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-
-  if (!url || !token) {
-    return null; // KV not configured
+  if (!url || !apiKey) {
+    return null; // Supabase not configured
   }
 
-  const response = await fetch(`${url}/${command}/${args.join("/")}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  const headers = {
+    "apikey": apiKey,
+    "Authorization": `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
 
+  const options = {
+    method,
+    headers
+  };
+
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(url, options);
   if (!response.ok) {
-    throw new Error(`KV REST API error: ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Supabase REST error (${response.status}): ${errorText}`);
   }
 
-  const body = await response.json();
-  return body.result;
+  // Handle 204 No Content
+  if (response.status === 204) {
+    return null;
+  }
+
+  return await response.json();
 }
 
 export default async function handler(req, res) {
-  // CORS Headers for static frontend integration
+  // CORS Headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -80,84 +93,70 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({ error: "Supabase environment variables (SUPABASE_URL and SUPABASE_ANON_KEY) are not set on Vercel." });
+  }
+
   try {
-    // 1. Fetch current minds list from Vercel KV
-    let mindsData = await queryKV("get", [KV_KEY]);
-    let minds = null;
-
-    if (mindsData) {
-      minds = JSON.parse(mindsData);
+    // 1. Handle GET: Retrieve all minds
+    if (req.method === "GET") {
+      let minds = await querySupabase("persons?select=*&order=id.asc");
+      return res.status(200).json(minds || []);
     }
 
-    // Initialize with defaults if empty
-    if (!minds || !Array.isArray(minds)) {
-      minds = DEFAULT_MINDS.map((m, idx) => ({
-        id: idx + 1,
-        name: m.name,
-        photo_path: m.photo_path,
-        elo: 1400.0,
-        wins: 0,
-        losses: 0
-      }));
-      // Write back to KV if active
-      if (process.env.KV_REST_API_URL) {
-        await queryKV("set", [KV_KEY, JSON.stringify(minds)]);
-      }
-    }
-
-    // 2. Handle POST request: Add Custom Mind or Reset/Clear DB
+    // 2. Handle POST: Admin actions
     if (req.method === "POST") {
       const body = req.body;
       const action = body.action;
 
-      if (action === "reset") {
-        minds = DEFAULT_MINDS.map((m, idx) => ({
-          id: idx + 1,
-          name: m.name,
-          photo_path: m.photo_path,
-          elo: 1400.0,
-          wins: 0,
-          losses: 0
-        }));
-      } else if (action === "clear") {
-        minds = [];
-      } else if (action === "delete") {
-        const deleteId = parseInt(body.id, 10);
-        minds = minds.filter(m => m.id !== deleteId);
-      } else if (action === "add") {
+      if (action === "add") {
         const { name, photo_path } = body;
         if (!name || !photo_path) {
           return res.status(400).json({ error: "Missing name or photo" });
         }
-        
-        // Prevent duplicate name
-        const duplicate = minds.some(m => m.name.toLowerCase() === name.toLowerCase());
-        if (duplicate) {
-          return res.status(400).json({ error: `A mind named "${name}" already exists.` });
-        }
 
-        const newId = minds.reduce((max, m) => m.id > max ? m.id : max, 0) + 1;
-        minds.push({
-          id: newId,
+        // Add mind starting at 1400 Elo out-of-the-box
+        await querySupabase("persons", "POST", {
           name: name,
           photo_path: photo_path,
           elo: 1400.0,
           wins: 0,
           losses: 0
         });
+      } else if (action === "delete") {
+        const deleteId = parseInt(body.id, 10);
+        await querySupabase(`persons?id=eq.${deleteId}`, "DELETE");
+      } else if (action === "clear") {
+        // Delete all rows in persons table
+        await querySupabase("persons?id=gt.0", "DELETE");
+      } else if (action === "reset") {
+        // Clear all and rebuild default 43 minds
+        await querySupabase("persons?id=gt.0", "DELETE");
+        
+        const payload = DEFAULT_MINDS.map((m, idx) => ({
+          name: m.name,
+          photo_path: m.photo_path,
+          elo: 1400.0,
+          wins: 0,
+          losses: 0
+        }));
+
+        await querySupabase("persons", "POST", payload);
       } else {
         return res.status(400).json({ error: "Invalid action" });
       }
 
-      // Write changes back to KV
-      if (process.env.KV_REST_API_URL) {
-        await queryKV("set", [KV_KEY, JSON.stringify(minds)]);
-      }
+      // Re-fetch updated list to return to client
+      const updated = await querySupabase("persons?select=*&order=id.asc");
+      return res.status(200).json(updated || []);
     }
 
-    return res.status(200).json(minds);
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (error) {
-    console.error("API error:", error);
+    console.error("Supabase API error:", error);
     return res.status(500).json({ error: error.message });
   }
 }

@@ -1,28 +1,36 @@
-const KV_KEY = "whoissmartest_minds_v1";
 const K = 32;
 
-// Helper to query Vercel KV REST API
-async function queryKV(command, args = []) {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
+async function querySupabase(endpoint, method = "GET", body = null) {
+  const url = `${process.env.SUPABASE_URL}/rest/v1/${endpoint}`;
+  const apiKey = process.env.SUPABASE_ANON_KEY;
 
-  if (!url || !token) {
-    return null; // KV not configured
+  if (!url || !apiKey) {
+    return null;
   }
 
-  const response = await fetch(`${url}/${command}/${args.join("/")}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  const headers = {
+    "apikey": apiKey,
+    "Authorization": `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
 
+  const options = {
+    method,
+    headers
+  };
+
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(url, options);
   if (!response.ok) {
-    throw new Error(`KV REST API error: ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Supabase REST error (${response.status}): ${errorText}`);
   }
 
-  const body = await response.json();
-  return body.result;
+  return await response.json();
 }
 
 export default async function handler(req, res) {
@@ -39,52 +47,58 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({ error: "Supabase environment variables are not set on Vercel." });
+  }
+
   try {
     const { winner_id, loser_id } = req.body;
     if (!winner_id || !loser_id) {
       return res.status(400).json({ error: "Missing winner_id or loser_id" });
     }
 
-    // 1. Fetch current minds list from KV
-    let mindsData = await queryKV("get", [KV_KEY]);
-    if (!mindsData) {
-      return res.status(404).json({ error: "Database not initialized. Visit the page first." });
-    }
-
-    let minds = JSON.parse(mindsData);
-    if (!Array.isArray(minds)) {
-      return res.status(500).json({ error: "Database format error." });
-    }
-
-    // 2. Find winner and loser
     const wId = parseInt(winner_id, 10);
     const lId = parseInt(loser_id, 10);
-    
-    const winner = minds.find(m => m.id === wId);
-    const loser = minds.find(m => m.id === lId);
 
-    if (!winner || !loser) {
-      return res.status(404).json({ error: "Winner or loser not found in database" });
+    // 1. Fetch current ratings for winner and loser
+    const responseData = await querySupabase(`persons?id=in.(${wId},${lId})`);
+    if (!responseData || responseData.length < 2) {
+      return res.status(404).json({ error: "Winner or loser not found in Supabase database" });
     }
 
-    // 3. Perform Elo mathematics on the server
+    const winner = responseData.find(m => m.id === wId);
+    const loser = responseData.find(m => m.id === lId);
+
+    if (!winner || !loser) {
+      return res.status(404).json({ error: "Could not locate winner/loser records" });
+    }
+
+    // 2. Perform Elo mathematics on the server
     const expectedWinner = 1 / (1 + Math.pow(10, (loser.elo - winner.elo) / 400));
     const expectedLoser = 1 / (1 + Math.pow(10, (winner.elo - loser.elo) / 400));
 
-    winner.elo = Math.round((winner.elo + K * (1 - expectedWinner)) * 10) / 10;
-    loser.elo = Math.round((loser.elo + K * (0 - expectedLoser)) * 10) / 10;
+    const newWinnerElo = Math.round((winner.elo + K * (1 - expectedWinner)) * 10) / 10;
+    const newLoserElo = Math.round((loser.elo + K * (0 - expectedLoser)) * 10) / 10;
 
-    winner.wins += 1;
-    loser.losses += 1;
+    // 3. Atomically update in Supabase via PATCH
+    await querySupabase(`persons?id=eq.${winner.id}`, "PATCH", {
+      elo: newWinnerElo,
+      wins: winner.wins + 1
+    });
 
-    // 4. Save updated list back to KV
-    if (process.env.KV_REST_API_URL) {
-      await queryKV("set", [KV_KEY, JSON.stringify(minds)]);
-    }
+    await querySupabase(`persons?id=eq.${loser.id}`, "PATCH", {
+      elo: newLoserElo,
+      losses: loser.losses + 1
+    });
 
-    return res.status(200).json(minds);
+    // 4. Return the complete updated leaderboard list sorted by id
+    const updatedMinds = await querySupabase("persons?select=*&order=id.asc");
+    return res.status(200).json(updatedMinds || []);
   } catch (error) {
-    console.error("Vote API error:", error);
+    console.error("Vote Supabase API error:", error);
     return res.status(500).json({ error: error.message });
   }
 }
