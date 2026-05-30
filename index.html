@@ -139,9 +139,7 @@
                 </button>
                 <div class="person-name" id="name-a">...</div>
                 <div class="person-stats">
-                  <span class="stat-elo" id="elo-a">Elo ...</span> &bull;
-                  <span id="wins-a">...W</span> &bull;
-                  <span id="losses-a">...L</span>
+                  <span class="stat-elo" id="elo-a">Elo ...</span>
                 </div>
                 <div class="keyboard-hint"><kbd>←</kbd> Press Left Arrow</div>
               </div>
@@ -158,9 +156,7 @@
                 </button>
                 <div class="person-name" id="name-b">...</div>
                 <div class="person-stats">
-                  <span class="stat-elo" id="elo-b">Elo ...</span> &bull;
-                  <span id="wins-b">...W</span> &bull;
-                  <span id="losses-b">...L</span>
+                  <span class="stat-elo" id="elo-b">Elo ...</span>
                 </div>
                 <div class="keyboard-hint"><kbd>→</kbd> Press Right Arrow</div>
               </div>
@@ -522,15 +518,11 @@ function loadNextMatchup() {
     document.getElementById("photo-a").src = personA.photo_path;
     document.getElementById("photo-a").alt = personA.name;
     document.getElementById("elo-a").textContent = `Elo ${Math.round(personA.elo)}`;
-    document.getElementById("wins-a").textContent = `${personA.wins}W`;
-    document.getElementById("losses-a").textContent = `${personA.losses}L`;
 
     document.getElementById("name-b").textContent = personB.name;
     document.getElementById("photo-b").src = personB.photo_path;
     document.getElementById("photo-b").alt = personB.name;
     document.getElementById("elo-b").textContent = `Elo ${Math.round(personB.elo)}`;
-    document.getElementById("wins-b").textContent = `${personB.wins}W`;
-    document.getElementById("losses-b").textContent = `${personB.losses}L`;
 
     row.classList.remove("fade-in");
     row.classList.add("fade-in-active");
