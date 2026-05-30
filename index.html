@@ -94,17 +94,17 @@
     /* Transition fade animations for voting card swap */
     .fade-out {
       opacity: 0;
-      transform: scale(0.95);
-      transition: all 0.2s ease-out;
+      transform: scale(0.97);
+      transition: opacity 0.08s ease-out, transform 0.08s ease-out;
     }
     .fade-in {
       opacity: 0;
-      transform: scale(0.95);
+      transform: scale(0.97);
     }
     .fade-in-active {
       opacity: 1;
       transform: scale(1);
-      transition: all 0.2s ease-out;
+      transition: opacity 0.12s ease-out, transform 0.12s ease-out;
     }
   </style>
 </head>
@@ -538,7 +538,7 @@ function loadNextMatchup() {
 
     // Speak matchup names
     speakMatchup(personA.name, personB.name);
-  }, 50);
+  }, 10);
 }
 
 // Submit ELO Calculation Vote
@@ -596,8 +596,8 @@ async function submitVote(choice) {
     setTimeout(() => {
       row.classList.remove("fade-out");
       loadNextMatchup();
-    }, 200);
-  }, 100);
+    }, 80);
+  }, 80);
 }
 
 function computeLocalVote(winner, loser) {
