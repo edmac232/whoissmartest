@@ -498,6 +498,13 @@ function loadNextMatchup() {
   row.classList.add("fade-in");
   row.classList.remove("fade-in-active");
 
+  // Instantly clear the image src so that the old images are completely discarded immediately
+  const photoA = document.getElementById("photo-a");
+  const photoB = document.getElementById("photo-b");
+  const clearGif = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  if (photoA) photoA.src = clearGif;
+  if (photoB) photoB.src = clearGif;
+
   setTimeout(() => {
     // Escape standard text values with textContent
     document.getElementById("name-a").textContent = personA.name;
