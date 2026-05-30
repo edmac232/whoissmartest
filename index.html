@@ -339,7 +339,19 @@ async function initDatabase() {
     }
   }
   
+  preloadAllMindsImages();
   loadNextMatchup();
+}
+
+// Preload all candidate images in the background so they are ready in browser memory instantly
+function preloadAllMindsImages() {
+  if (!minds || !Array.isArray(minds)) return;
+  minds.forEach(m => {
+    if (m.photo_path) {
+      const img = new Image();
+      img.src = m.photo_path;
+    }
+  });
 }
 
 // Load default 47 minds (local only fallback)
