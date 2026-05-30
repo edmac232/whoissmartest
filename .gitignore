@@ -6,3 +6,6 @@ static/uploads/*
 *.pyc
 .env
 images.jpg
+node_modules/
+.vercel/
+.DS_Store
