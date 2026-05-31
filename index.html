@@ -11,6 +11,11 @@
     window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
   </script>
   <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Vercel Speed Insights Tracking Code -->
+  <script>
+    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+  </script>
+  <script defer src="/_vercel/speed-insights/script.js"></script>
   <style>
     /* Styling adjustments for single-page app tabs and layout */
     .tab-content {
@@ -106,6 +111,204 @@
       transform: scale(1);
       transition: opacity 0.12s ease-out, transform 0.12s ease-out;
     }
+
+    /* Contributions Info Button & Overlay Styles */
+    .vote-photo-wrapper {
+      position: relative;
+      width: 100%;
+      height: 270px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .vote-photo-wrapper .vote-photo-btn {
+      width: 100%;
+      height: 100% !important;
+      border-radius: 0 !important;
+      border: none !important;
+    }
+    
+    .info-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(20, 21, 23, 0.82);
+      border: 1px solid rgba(223, 215, 195, 0.35);
+      color: #dfd7c3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 15;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      padding: 0;
+    }
+    
+    .info-btn:hover {
+      background: rgba(223, 215, 195, 0.15);
+      color: #ffffff;
+      border-color: #dfd7c3;
+      transform: scale(1.1);
+    }
+    
+    .info-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(20, 21, 23, 0.96);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(223, 215, 195, 0.25);
+      border-radius: 4px;
+      padding: 16px 20px;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-8px);
+      transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1), 
+                  transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), 
+                  visibility 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 25;
+    }
+    
+    .info-btn:hover ~ .info-overlay,
+    .info-overlay:hover {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    
+    .info-overlay.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    
+    .info-overlay-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(223, 215, 195, 0.2);
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .info-overlay-name {
+      font-family: 'Lora', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+    
+    .info-overlay-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      transition: color 0.15s ease;
+    }
+    
+    .info-overlay-close:hover {
+      color: #fca5a5;
+    }
+    
+    .info-overlay-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #dfd7c3;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    
+    .info-overlay-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    
+    .info-overlay-list li {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #cbd5e1;
+      position: relative;
+      padding-left: 14px;
+    }
+    
+    .info-overlay-list li::before {
+      content: "▪";
+      position: absolute;
+      left: 0;
+      top: -1px;
+      color: #dfd7c3;
+      font-size: 10px;
+    }
+    
+    .info-overlay-hint {
+      font-size: 9px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 10px;
+      opacity: 0.7;
+      font-family: 'Fira Code', monospace;
+      user-select: none;
+    }
+    
+    @media (max-width: 768px) {
+      .vote-photo-wrapper {
+        height: 35vw;
+        max-height: 180px;
+        min-height: 120px;
+      }
+      .info-overlay {
+        padding: 10px 12px;
+      }
+      .info-overlay-header {
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+      }
+      .info-overlay-name {
+        font-size: 13px;
+      }
+      .info-overlay-list {
+        gap: 4px;
+      }
+      .info-overlay-list li {
+        font-size: 10.5px;
+        line-height: 1.35;
+        padding-left: 10px;
+      }
+      .info-overlay-list li::before {
+        font-size: 8px;
+      }
+      .info-overlay-title {
+        font-size: 9px;
+        margin-bottom: 6px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -134,9 +337,29 @@
             <!-- Person A -->
             <td>
               <div class="vote-candidate-card" id="card-a">
-                <button class="vote-photo-btn" onclick="submitVote('A')">
-                  <img id="photo-a" src="" alt="Candidate A">
-                </button>
+                <div class="vote-photo-wrapper" onmouseleave="clearActiveInfo('A')">
+                  <button class="vote-photo-btn" onclick="submitVote('A')">
+                    <img id="photo-a" src="" alt="Candidate A">
+                  </button>
+                  <button class="info-btn" onclick="toggleInfo(event, 'A')" title="View contributions" aria-label="View contributions">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                  </button>
+                  <div class="info-overlay" id="info-overlay-A" onclick="closeInfo(event, 'A')">
+                    <div class="info-overlay-header">
+                      <span class="info-overlay-name" id="info-name-A">...</span>
+                      <button class="info-overlay-close" onclick="closeInfo(event, 'A')" aria-label="Close panel">&times;</button>
+                    </div>
+                    <div class="info-overlay-title">Top Contributions to Humanity</div>
+                    <ul class="info-overlay-list" id="info-list-A">
+                      <li>...</li>
+                      <li>...</li>
+                      <li>...</li>
+                    </ul>
+                    <div class="info-overlay-hint">Tap anywhere to close</div>
+                  </div>
+                </div>
                 <div class="person-name" id="name-a">...</div>
                 <div class="person-stats">
                   <span class="stat-elo" id="elo-a">Elo ...</span>
@@ -151,9 +374,29 @@
             <!-- Person B -->
             <td>
               <div class="vote-candidate-card" id="card-b">
-                <button class="vote-photo-btn" onclick="submitVote('B')">
-                  <img id="photo-b" src="" alt="Candidate B">
-                </button>
+                <div class="vote-photo-wrapper" onmouseleave="clearActiveInfo('B')">
+                  <button class="vote-photo-btn" onclick="submitVote('B')">
+                    <img id="photo-b" src="" alt="Candidate B">
+                  </button>
+                  <button class="info-btn" onclick="toggleInfo(event, 'B')" title="View contributions" aria-label="View contributions">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                  </button>
+                  <div class="info-overlay" id="info-overlay-B" onclick="closeInfo(event, 'B')">
+                    <div class="info-overlay-header">
+                      <span class="info-overlay-name" id="info-name-B">...</span>
+                      <button class="info-overlay-close" onclick="closeInfo(event, 'B')" aria-label="Close panel">&times;</button>
+                    </div>
+                    <div class="info-overlay-title">Top Contributions to Humanity</div>
+                    <ul class="info-overlay-list" id="info-list-B">
+                      <li>...</li>
+                      <li>...</li>
+                      <li>...</li>
+                    </ul>
+                    <div class="info-overlay-hint">Tap anywhere to close</div>
+                  </div>
+                </div>
                 <div class="person-name" id="name-b">...</div>
                 <div class="person-stats">
                   <span class="stat-elo" id="elo-b">Elo ...</span>
@@ -201,6 +444,327 @@
 
 <!-- Logic -->
 <script>
+// ============================================================================
+// Default Scientific Minds Contributions Dictionary
+// ============================================================================
+const MIND_CONTRIBUTIONS = {
+  "Alan Turing": [
+    "Formalized the concepts of algorithm and computation with the Turing machine.",
+    "Played a pivotal role in cracking intercepted coded messages at Bletchley Park (Enigma).",
+    "Laid the foundations of artificial intelligence and cognitive science (Turing Test)."
+  ],
+  "Albert Einstein": [
+    "Developed the general theory of relativity, transforming our understanding of space, time, and gravity.",
+    "Explained the photoelectric effect, which helped establish quantum theory (won Nobel Prize).",
+    "Formulated the mass-energy equivalence formula E = mc²."
+  ],
+  "Alessandro Volta": [
+    "Invented the electric battery (the voltaic pile), providing the first source of continuous electrical current.",
+    "Discovered and isolated methane gas.",
+    "Developed the concept of electrical capacitance and the electroscope."
+  ],
+  "Archimedes": [
+    "Formulated Archimedes' principle of buoyancy.",
+    "Created the Archimedes' screw for raising water and designed innovative war machines.",
+    "Calculated highly accurate approximations of Pi (π) and pioneered infinitesimal calculus methods."
+  ],
+  "Aristotle": [
+    "Established the first systematic system of formal logic (syllogistic logic).",
+    "Pioneered the study of biology, categorizing and observing hundreds of animal species.",
+    "Developed foundational theories in metaphysics, ethics, and natural science that shaped Western philosophy for millennia."
+  ],
+  "Benjamin Franklin": [
+    "Proved that lightning is electricity and invented the lightning rod.",
+    "Invented bifocal eyeglasses and the highly efficient Franklin stove.",
+    "Formulated the principle of conservation of charge and identified positive and negative charges."
+  ],
+  "Bernhard Riemann": [
+    "Developed Riemannian geometry, providing the mathematical framework used for Einstein's General Relativity.",
+    "Formulated the Riemann Hypothesis, one of the most important unsolved problems in mathematics.",
+    "Made fundamental contributions to complex analysis and the theory of prime numbers (Riemann zeta function)."
+  ],
+  "Carl Friedrich Gauss": [
+    "Proved the Fundamental Theorem of Algebra.",
+    "Co-invented the electromagnetic telegraph and developed the magnetometers.",
+    "Developed the method of least squares and the Gaussian distribution (normal curve) in statistics."
+  ],
+  "Charles Darwin": [
+    "Formulated the theory of evolution by natural selection.",
+    "Provided comprehensive evidence for common descent in 'On the Origin of Species'.",
+    "Made major contributions to geology and the study of coral reef formation."
+  ],
+  "David Hilbert": [
+    "Formulated the influential list of 23 unsolved mathematical challenges (Hilbert's Problems).",
+    "Developed Hilbert space theory, which is foundational to quantum mechanics.",
+    "Axiomatized geometry, modernizing Euclidean geometry principles."
+  ],
+  "Edward Teller": [
+    "Prominently co-developed the hydrogen bomb (Teller-Ulam design).",
+    "Made key contributions to chemical physics and nuclear physics (Jahn-Teller effect).",
+    "Pioneered research on nuclear reactor safety and fusion energy."
+  ],
+  "Elon Musk": [
+    "Revolutionized commercial space travel and aerospace engineering with SpaceX's reusable rockets.",
+    "Accelerated the global transition to sustainable energy through Tesla's electric vehicles and battery tech.",
+    "Co-founded PayPal (digital payments) and pioneered satellite internet with Starlink."
+  ],
+  "Enrico Fermi": [
+    "Created the world's first nuclear reactor (Chicago Pile-1) and achieved the first controlled self-sustaining chain reaction.",
+    "Developed the Fermi-Dirac statistics for particles with half-integer spin (fermions).",
+    "Formulated the theory of beta decay and pioneered neutron bombardment physics."
+  ],
+  "Erwin Schrödinger": [
+    "Formulated the Schrödinger equation, the fundamental equation of quantum mechanics.",
+    "Proposed the famous 'Schrödinger's Cat' thought experiment on quantum superposition.",
+    "Wrote 'What Is Life?', which inspired the discovery of the DNA double helix."
+  ],
+  "Erwin Schrodinger": [
+    "Formulated the Schrödinger equation, the fundamental equation of quantum mechanics.",
+    "Proposed the famous 'Schrödinger's Cat' thought experiment on quantum superposition.",
+    "Wrote 'What Is Life?', which inspired the discovery of the DNA double helix."
+  ],
+  "Euclid": [
+    "Wrote 'Elements', the most influential textbook in mathematical history, systematizing geometry.",
+    "Formulated Euclidean geometry axioms and theorems (e.g., infinitude of prime numbers).",
+    "Developed the Euclidean algorithm for finding the greatest common divisor of numbers."
+  ],
+  "Fritz Haber": [
+    "Invented the Haber-Bosch process for synthesizing ammonia, enabling mass-produced fertilizers that feed billions.",
+    "Pioneered the development and use of chemical weapons during WWI.",
+    "Developed the Born-Haber cycle in thermodynamics."
+  ],
+  "Galileo Galilei": [
+    "Improved the telescope to discover Jupiter's moons, Venus's phases, and sunspots.",
+    "Formulated the law of falling bodies and the principle of inertia.",
+    "Championed heliocentrism, establishing the modern scientific method."
+  ],
+  "Gottfried Wilhelm Leibniz": [
+    "Independently co-invented calculus, developing the modern notation (d/dx and ∫).",
+    "Invented the binary number system, the mathematical foundation of modern computers.",
+    "Developed mechanical calculators and proposed the concept of kinetic energy conservation."
+  ],
+  "Henri Poincare": [
+    "Formulated the Poincaré conjecture, a foundational theorem in topology (solved in 2003).",
+    "Pioneered chaos theory through research on the three-body problem.",
+    "Contributed key insights to the theory of special relativity (Poincaré groups)."
+  ],
+  "Henri Poincaré": [
+    "Formulated the Poincaré conjecture, a foundational theorem in topology (solved in 2003).",
+    "Pioneered chaos theory through research on the three-body problem.",
+    "Contributed key insights to the theory of special relativity (Poincaré groups)."
+  ],
+  "J. Robert Oppenheimer": [
+    "Directed the Manhattan Project's Los Alamos Laboratory, leading to the creation of the atomic bomb.",
+    "Pioneered theoretical astrophysics, predicting the existence of black holes and neutron stars.",
+    "Made foundational contributions to quantum mechanics (Born-Oppenheimer approximation)."
+  ],
+  "James Clerk Maxwell": [
+    "Formulated Maxwell's equations, unifying electricity, magnetism, and light as electromagnetism.",
+    "Developed the Maxwell-Boltzmann distribution, laying the foundation of statistical mechanics.",
+    "Created the first durable color photograph."
+  ],
+  "James Watt": [
+    "Radically improved the steam engine with the separate condenser, fueling the Industrial Revolution.",
+    "Developed the concept of horsepower and designed the centrifugal governor for speed control.",
+    "Invented the rotary motion mechanism and the pressure gauge."
+  ],
+  "Johannes Kepler": [
+    "Formulated the three Laws of Planetary Motion describing elliptical orbits.",
+    "Improved the refracting telescope (Keplerian telescope design).",
+    "Made pioneering contributions to the field of optics and explained how the human eye focuses light."
+  ],
+  "John von Neumann": [
+    "Designed the von Neumann architecture, the template for almost all modern computer designs.",
+    "Founded game theory and formulated its mathematical foundations.",
+    "Made vital contributions to the Manhattan Project and the mathematical formulation of quantum mechanics."
+  ],
+  "Joseph Fourier": [
+    "Developed the Fourier series and Fourier transform, revolutionizing signal processing and mathematics.",
+    "Discovered the greenhouse effect, explaining how atmospheres retain heat.",
+    "Formulated the law of heat conduction (Fourier's law)."
+  ],
+  "Joseph-Louis Lagrange": [
+    "Developed Lagrangian mechanics, reformulating classical mechanics using energy principles.",
+    "Contributed to the calculus of variations and the metric system.",
+    "Solved key problems in number theory and celestial mechanics (Lagrangian points)."
+  ],
+  "Leonardo da Vinci": [
+    "Painted some of the most famous works of art in history, including the Mona Lisa and The Last Supper.",
+    "Drew highly advanced designs for flying machines, armored vehicles, and automated systems.",
+    "Conducted extremely detailed, pioneering studies of human anatomy and mechanics."
+  ],
+  "Leonhard Euler": [
+    "Developed mathematical analysis, graph theory, and topology (e.g., Seven Bridges of Königsberg).",
+    "Introduced much of modern mathematical notation, including e, i, π, and f(x).",
+    "Formulated Euler's formula (e^(iπ) + 1 = 0) and pioneered fluid dynamics."
+  ],
+  "Ludwig Boltzmann": [
+    "Developed the statistical explanation of the second law of thermodynamics (entropy formula S = k log W).",
+    "Formulated the Boltzmann distribution and kinetic theory of gases.",
+    "Advocated fiercely for the reality of atoms and molecules."
+  ],
+  "Marie Curie": [
+    "Discovered the elements polonium and radium.",
+    "Pioneered the study of radioactivity and coined the term (won Nobel Prizes in Physics and Chemistry).",
+    "Developed mobile X-ray units to treat wounded soldiers in World War I."
+  ],
+  "Mark Zuckerberg": [
+    "Co-founded Facebook, completely transforming global social networking and digital communication.",
+    "Pioneered mass-scale social graph technology and targeted digital advertising models.",
+    "Driven major advancements in virtual reality (Oculus/Quest) and open-source artificial intelligence (LLaMA)."
+  ],
+  "Max Born": [
+    "Formulated the Born rule, giving the probability interpretation of the wave function in quantum mechanics.",
+    "Contributed to the mathematical foundation of matrix mechanics with Heisenberg.",
+    "Won the Nobel Prize for his fundamental research in quantum mechanics."
+  ],
+  "Max Planck": [
+    "Discovered energy quanta, initiating quantum theory and introducing Planck's constant (h).",
+    "Formulated Planck's law of blackbody radiation.",
+    "Made critical contributions to thermodynamics and physical chemistry."
+  ],
+  "Michael Faraday": [
+    "Discovered electromagnetic induction, enabling the invention of the electric generator and motor.",
+    "Discovered the laws of electrolysis and discovered benzene.",
+    "Invented the Faraday cage to block electromagnetic fields."
+  ],
+  "Neil deGrasse Tyson": [
+    "Popularized astrophysics globally through 'Cosmos: A Spacetime Odyssey' and popular science books.",
+    "Led the public reclassification of Pluto as a dwarf planet as Director of the Hayden Planetarium.",
+    "Advocated extensively for space exploration funding and scientific literacy."
+  ],
+  "Nicolaus Copernicus": [
+    "Formulated the heliocentric model, placing the Sun at the center of the universe.",
+    "Sparked the Copernican Revolution, the starting point of modern astronomy.",
+    "Formulated the Quantity Theory of Money (Gresham-Copernicus law)."
+  ],
+  "Niels Bohr": [
+    "Developed the Bohr model of the atom, introducing quantized electron orbits.",
+    "Formulated the principle of complementarity in quantum mechanics.",
+    "Played a major role in the development of quantum physics and the Manhattan Project."
+  ],
+  "Nikola Tesla": [
+    "Invented the alternating current (AC) electricity supply system, powering the modern world.",
+    "Developed the induction motor, the Tesla coil, and pioneered wireless transmission concepts.",
+    "Invented radio control devices and made early contributions to X-ray imaging."
+  ],
+  "Paul Dirac": [
+    "Formulated the Dirac equation, predicting the existence of antimatter (positrons).",
+    "Unified quantum mechanics and special relativity, co-founding quantum field theory.",
+    "Introduced the bra-ket notation and the Dirac delta function."
+  ],
+  "Pierre-Simon Laplace": [
+    "Formulated Laplace's equation and the Laplace transform, fundamental to physics and engineering.",
+    "Proved the stability of the solar system and hypothesized the existence of black holes.",
+    "Developed the Bayesian interpretation of probability and the central limit theorem."
+  ],
+  "Rene Descartes": [
+    "Invented Cartesian geometry, bridging algebra and geometry (Cartesian coordinate system).",
+    "Established modern rationalist philosophy ('Cogito, ergo sum').",
+    "Formulated the law of refraction (Snell-Descartes law) and laws of motion."
+  ],
+  "René Descartes": [
+    "Invented Cartesian geometry, bridging algebra and geometry (Cartesian coordinate system).",
+    "Established modern rationalist philosophy ('Cogito, ergo sum').",
+    "Formulated the law of refraction (Snell-Descartes law) and laws of motion."
+  ],
+  "Richard Feynman": [
+    "Developed quantum electrodynamics (QED), winning the Nobel Prize, and invented Feynman diagrams.",
+    "Pioneered the concept of nanotechnology and quantum computing.",
+    "Served on the Rogers Commission investigating the Space Shuttle Challenger disaster."
+  ],
+  "Robert Hooke": [
+    "Formulated Hooke's Law of elasticity (F = -kx).",
+    "Coined the term 'cell' after observing plant tissues under a microscope.",
+    "Wrote 'Micrographia', the first major publication on microscopy, and designed the Gregorian telescope."
+  ],
+  "Sir George Stokes": [
+    "Formulated the Navier-Stokes equations, the fundamental equations of fluid dynamics.",
+    "Discovered and explained the phenomenon of fluorescence.",
+    "Developed Stokes' theorem in vector calculus and contributed to optics."
+  ],
+  "Sir Isaac Newton": [
+    "Formulated the three Laws of Motion and the Universal Law of Gravitation.",
+    "Independently co-invented calculus, transforming mathematical science.",
+    "Invented the reflecting telescope and discovered the spectrum of white light."
+  ],
+  "Srinivasa Ramanujan": [
+    "Formulated thousands of groundbreaking mathematical identities in number theory, infinite series, and continued fractions.",
+    "Developed the Ramanujan prime, Ramanujan theta function, and mock theta functions.",
+    "Made extraordinary contributions to partition formulas despite having no formal training."
+  ],
+  "Stephen Hawking": [
+    "Predicted that black holes emit thermal radiation, now known as Hawking radiation.",
+    "Formulated singularity theorems in general relativity with Roger Penrose.",
+    "Wrote 'A Brief History of Time', making cosmology accessible to millions."
+  ],
+  "Thomas Edison": [
+    "Invented the phonograph, creating the first audio recording and playback device.",
+    "Developed the practical incandescent light bulb and established the first commercial electric power utility.",
+    "Pioneered industrial research laboratories and invented the motion picture camera (Kinetoscope)."
+  ],
+  "Werner Heisenberg": [
+    "Formulated the Uncertainty Principle, a cornerstone of quantum mechanics.",
+    "Created matrix mechanics, the first complete formulation of quantum mechanics.",
+    "Led the German nuclear weapon project during World War II."
+  ],
+  "Wolfgang Pauli": [
+    "Formulated the Pauli Exclusion Principle, explaining the structure of atoms and chemical bonding.",
+    "Proposed the existence of the neutrino particle to explain energy conservation in beta decay.",
+    "Contributed to quantum spin theory (Pauli matrices) and quantum field theory."
+  ]
+};
+
+function getContributions(name) {
+  const cleanName = name ? name.trim() : "";
+  if (MIND_CONTRIBUTIONS[cleanName]) {
+    return MIND_CONTRIBUTIONS[cleanName];
+  }
+  
+  // Normalize lookup (remove accents)
+  const normalized = cleanName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (MIND_CONTRIBUTIONS[normalized]) {
+    return MIND_CONTRIBUTIONS[normalized];
+  }
+  
+  // Safe general fallback for custom-added minds
+  return [
+    "Key contributions in their respective scientific or industrial field.",
+    "Inspiring generations of researchers and pioneers globally.",
+    "Advancing human understanding of the natural or digital world."
+  ];
+}
+
+// Info Overlay Helpers
+function toggleInfo(event, cardType) {
+  event.stopPropagation();
+  const overlay = document.getElementById(`info-overlay-${cardType}`);
+  if (overlay) {
+    // Close other overlay first
+    const otherType = cardType === 'A' ? 'B' : 'A';
+    const otherOverlay = document.getElementById(`info-overlay-${otherType}`);
+    if (otherOverlay) otherOverlay.classList.remove("active");
+    
+    overlay.classList.toggle("active");
+  }
+}
+
+function closeInfo(event, cardType) {
+  event.stopPropagation();
+  const overlay = document.getElementById(`info-overlay-${cardType}`);
+  if (overlay) {
+    overlay.classList.remove("active");
+  }
+}
+
+// Clear when mouse leaves
+function clearActiveInfo(cardType) {
+  const overlay = document.getElementById(`info-overlay-${cardType}`);
+  if (overlay) {
+    overlay.classList.remove("active");
+  }
+}
+
 // ============================================================================
 // Default 43 Scientific Minds Database
 // ============================================================================
@@ -490,6 +1054,12 @@ function loadNextMatchup() {
   document.getElementById("vote-game-container").style.display = "block";
   document.getElementById("no-photos").style.display = "none";
 
+  // Close active overlays on new matchup loading
+  const overlayA = document.getElementById("info-overlay-A");
+  const overlayB = document.getElementById("info-overlay-B");
+  if (overlayA) overlayA.classList.remove("active");
+  if (overlayB) overlayB.classList.remove("active");
+
   // Select two random distinct minds
   let indexA = Math.floor(Math.random() * minds.length);
   let indexB = Math.floor(Math.random() * minds.length);
@@ -523,6 +1093,31 @@ function loadNextMatchup() {
     document.getElementById("photo-b").src = personB.photo_path;
     document.getElementById("photo-b").alt = personB.name;
     document.getElementById("elo-b").textContent = `Elo ${Math.round(personB.elo)}`;
+
+    // Populate info overlay contents
+    const infoNameA = document.getElementById("info-name-A");
+    const infoListA = document.getElementById("info-list-A");
+    if (infoNameA && infoListA) {
+      infoNameA.textContent = personA.name;
+      const contribsA = getContributions(personA.name);
+      infoListA.innerHTML = contribsA.map(c => {
+        const li = document.createElement("li");
+        li.textContent = c;
+        return li.outerHTML;
+      }).join("");
+    }
+
+    const infoNameB = document.getElementById("info-name-B");
+    const infoListB = document.getElementById("info-list-B");
+    if (infoNameB && infoListB) {
+      infoNameB.textContent = personB.name;
+      const contribsB = getContributions(personB.name);
+      infoListB.innerHTML = contribsB.map(c => {
+        const li = document.createElement("li");
+        li.textContent = c;
+        return li.outerHTML;
+      }).join("");
+    }
 
     row.classList.remove("fade-in");
     row.classList.add("fade-in-active");
@@ -574,6 +1169,19 @@ async function submitVote(choice) {
   } else {
     // Local storage only fallback
     computeLocalVote(winner, loser);
+  }
+
+  // Track vote in Vercel Web Analytics
+  if (typeof window.va !== 'undefined') {
+    window.va('event', {
+      name: 'vote',
+      properties: {
+        winner: winner.name,
+        loser: loser.name,
+        choice: choice,
+        is_shared_db: isSharedDb
+      }
+    });
   }
 
   // Short visual transition pause before next matchup loading
@@ -733,6 +1341,17 @@ async function handleSuggest(e) {
   const details = detailsInput.value.trim();
 
   if (!name) return;
+
+  // Track suggestion in Vercel Web Analytics
+  if (typeof window.va !== 'undefined') {
+    window.va('event', {
+      name: 'suggest_mind',
+      properties: {
+        name: name,
+        is_shared_db: isSharedDb
+      }
+    });
+  }
 
   if (!isSharedDb) {
     // Local storage fallback for local/offline testing

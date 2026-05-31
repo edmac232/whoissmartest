@@ -1,3 +1,5 @@
+import { track } from "@vercel/analytics/server";
+
 const DEFAULT_MINDS = [
   { name: "Alan Turing", photo_path: "scientist-pics/Alan Turing.webp" },
   { name: "Albert Einstein", photo_path: "scientist-pics/Albert Einstein.jpg" },
@@ -163,12 +165,30 @@ export default async function handler(req, res) {
           wins: 0,
           losses: 0
         });
+
+        try {
+          await track("admin_add_mind", { name });
+        } catch (analyticsError) {
+          console.warn("Vercel Server-side Analytics tracking failed:", analyticsError);
+        }
       } else if (action === "delete") {
         const deleteId = parseInt(body.id, 10);
         await querySupabase(`persons?id=eq.${deleteId}`, "DELETE");
+
+        try {
+          await track("admin_delete_mind", { id: deleteId });
+        } catch (analyticsError) {
+          console.warn("Vercel Server-side Analytics tracking failed:", analyticsError);
+        }
       } else if (action === "clear") {
         // Delete all rows in persons table
         await querySupabase("persons?id=gt.0", "DELETE");
+
+        try {
+          await track("admin_clear_all_minds");
+        } catch (analyticsError) {
+          console.warn("Vercel Server-side Analytics tracking failed:", analyticsError);
+        }
       } else if (action === "reset") {
         // Clear all and rebuild default 43 minds
         await querySupabase("persons?id=gt.0", "DELETE");
@@ -182,6 +202,12 @@ export default async function handler(req, res) {
         }));
 
         await querySupabase("persons", "POST", payload);
+
+        try {
+          await track("admin_reset_to_defaults");
+        } catch (analyticsError) {
+          console.warn("Vercel Server-side Analytics tracking failed:", analyticsError);
+        }
       } else {
         return res.status(400).json({ error: "Invalid action" });
       }

@@ -681,4 +681,211 @@ a:hover {
     }
 }
 
+/* ==========================================================================
+   Contributions Info Button & Overlay Styles
+   ========================================================================== */
+.vote-photo-wrapper {
+    position: relative;
+    width: 100%;
+    height: 270px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Ensure the voting button fills the container properly */
+.vote-photo-wrapper .vote-photo-btn {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+}
+
+/* elegant gold info button */
+.info-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(20, 21, 23, 0.82);
+    border: 1px solid rgba(223, 215, 195, 0.35);
+    color: #dfd7c3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 15;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    padding: 0;
+}
+
+.info-btn:hover {
+    background: rgba(223, 215, 195, 0.15);
+    color: #ffffff;
+    border-color: #dfd7c3;
+    transform: scale(1.1);
+}
+
+/* premium glassmorphic overlay */
+.info-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(20, 21, 23, 0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(223, 215, 195, 0.25);
+    border-radius: 4px;
+    padding: 16px 20px;
+    color: #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1), 
+                transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), 
+                visibility 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 25;
+}
+
+/* Hover behaviors for desktop */
+.info-btn:hover ~ .info-overlay,
+.info-overlay:hover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* Active touch class for mobile toggles */
+.info-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* Overlay contents styling */
+.info-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(223, 215, 195, 0.2);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+}
+
+.info-overlay-name {
+    font-family: 'Lora', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+.info-overlay-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.info-overlay-close:hover {
+    color: #fca5a5;
+}
+
+.info-overlay-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #dfd7c3;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.info-overlay-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.info-overlay-list li {
+    font-size: 12px;
+    line-height: 1.45;
+    color: #cbd5e1;
+    position: relative;
+    padding-left: 14px;
+}
+
+.info-overlay-list li::before {
+    content: "▪";
+    position: absolute;
+    left: 0;
+    top: -1px;
+    color: #dfd7c3;
+    font-size: 10px;
+}
+
+.info-overlay-hint {
+    font-size: 9px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 10px;
+    opacity: 0.7;
+    font-family: 'Fira Code', monospace;
+    user-select: none;
+}
+
+/* Adjust photo wrapper size inside responsive queries to match mobile cards */
+@media (max-width: 768px) {
+    .vote-photo-wrapper {
+        height: 35vw;
+        max-height: 180px;
+        min-height: 120px;
+    }
+    .info-overlay {
+        padding: 10px 12px;
+    }
+    .info-overlay-header {
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+    }
+    .info-overlay-name {
+        font-size: 13px;
+    }
+    .info-overlay-list {
+        gap: 4px;
+    }
+    .info-overlay-list li {
+        font-size: 10.5px;
+        line-height: 1.35;
+        padding-left: 10px;
+    }
+    .info-overlay-list li::before {
+        font-size: 8px;
+    }
+    .info-overlay-title {
+        font-size: 9px;
+        margin-bottom: 6px;
+    }
+}
+
 

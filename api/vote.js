@@ -1,3 +1,5 @@
+import { track } from "@vercel/analytics/server";
+
 const K = 32;
 
 async function querySupabase(endpoint, method = "GET", body = null) {
@@ -93,6 +95,18 @@ export default async function handler(req, res) {
       elo: newLoserElo,
       losses: loser.losses + 1
     });
+
+    // Track vote on the server-side
+    try {
+      await track("vote_cast", {
+        winner: winner.name,
+        loser: loser.name,
+        winner_new_elo: newWinnerElo,
+        loser_new_elo: newLoserElo
+      });
+    } catch (analyticsError) {
+      console.warn("Vercel Server-side Analytics tracking failed:", analyticsError);
+    }
 
     // 4. Return the complete updated leaderboard list sorted by id
     const updatedMinds = await querySupabase("persons?select=*&order=id.asc");
