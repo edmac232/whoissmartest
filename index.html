@@ -305,6 +305,54 @@
         margin-top: 6px;
       }
     }
+
+    .mobile-confirm-btn {
+      display: none;
+      background-color: #dfd7c3;
+      color: #141517;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      width: 100%;
+      margin-top: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      box-shadow: 0 4px 12px rgba(223, 215, 195, 0.2);
+      transition: all 0.2s ease;
+    }
+    
+    .mobile-confirm-btn:active {
+      transform: scale(0.98);
+      background-color: #ffffff;
+    }
+    
+    @media (max-width: 768px) {
+      .vote-candidate-card.selected .mobile-confirm-btn {
+        display: block !important;
+        animation: fadeInConfirm 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      
+      .vote-candidate-card.selected {
+        border-color: #dfd7c3 !important;
+        background: #1f2124 !important;
+        box-shadow: 0 0 12px rgba(223, 215, 195, 0.15);
+      }
+    }
+    
+    @keyframes fadeInConfirm {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 <body>
@@ -334,7 +382,7 @@
             <td>
               <div class="vote-candidate-card" id="card-a">
                 <div class="vote-photo-wrapper" onmouseleave="clearActiveInfo('A')">
-                  <button class="vote-photo-btn" onclick="submitVote('A')">
+                  <button class="vote-photo-btn" onclick="handlePhotoClick('A')">
                     <img id="photo-a" src="" alt="Candidate A">
                   </button>
                   <button class="info-btn" onclick="toggleInfo(event, 'A')" title="View contributions" aria-label="View contributions">
@@ -356,6 +404,9 @@
                 <div class="person-stats">
                   <span class="stat-elo" id="elo-a">Elo ...</span>
                 </div>
+                <button class="mobile-confirm-btn" id="confirm-btn-A" onclick="submitVote('A')">
+                  Confirm Vote
+                </button>
                 <div class="keyboard-hint"><kbd>←</kbd> Press Left Arrow</div>
               </div>
             </td>
@@ -367,7 +418,7 @@
             <td>
               <div class="vote-candidate-card" id="card-b">
                 <div class="vote-photo-wrapper" onmouseleave="clearActiveInfo('B')">
-                  <button class="vote-photo-btn" onclick="submitVote('B')">
+                  <button class="vote-photo-btn" onclick="handlePhotoClick('B')">
                     <img id="photo-b" src="" alt="Candidate B">
                   </button>
                   <button class="info-btn" onclick="toggleInfo(event, 'B')" title="View contributions" aria-label="View contributions">
@@ -389,6 +440,9 @@
                 <div class="person-stats">
                   <span class="stat-elo" id="elo-b">Elo ...</span>
                 </div>
+                <button class="mobile-confirm-btn" id="confirm-btn-B" onclick="submitVote('B')">
+                  Confirm Vote
+                </button>
                 <div class="keyboard-hint"><kbd>→</kbd> Press Right Arrow</div>
               </div>
             </td>
@@ -1060,6 +1114,9 @@ function loadNextMatchup() {
     overlayB.classList.remove("dismissed");
   }
 
+  // Reset mobile selection state
+  selectCandidate(null);
+
   // Select two random distinct minds
   let indexA = Math.floor(Math.random() * minds.length);
   let indexB = Math.floor(Math.random() * minds.length);
@@ -1121,6 +1178,40 @@ function loadNextMatchup() {
     // Speak matchup names
     speakMatchup(personA.name, personB.name);
   }, 10);
+}
+
+// Mobile Selection Helpers
+function isMobileDevice() {
+  return window.matchMedia("(max-width: 768px)").matches || ('ontouchstart' in window);
+}
+
+let selectedChoice = null;
+
+function selectCandidate(choice) {
+  selectedChoice = choice;
+  
+  const cardA = document.getElementById("card-a");
+  const cardB = document.getElementById("card-b");
+  
+  if (choice === 'A') {
+    if (cardA) cardA.classList.add("selected");
+    if (cardB) cardB.classList.remove("selected");
+  } else if (choice === 'B') {
+    if (cardB) cardB.classList.add("selected");
+    if (cardA) cardA.classList.remove("selected");
+  } else {
+    if (cardA) cardA.classList.remove("selected");
+    if (cardB) cardB.classList.remove("selected");
+    selectedChoice = null;
+  }
+}
+
+function handlePhotoClick(choice) {
+  if (isMobileDevice()) {
+    selectCandidate(choice);
+  } else {
+    submitVote(choice);
+  }
 }
 
 // Submit ELO Calculation Vote
