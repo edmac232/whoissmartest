@@ -193,10 +193,10 @@
     
     /* Only trigger hover state on devices that support true hover */
     @media (hover: hover) {
-      .vote-candidate-card:hover .info-overlay {
+      .info-btn:hover ~ .info-overlay {
         opacity: 1;
         visibility: visible;
-        pointer-events: auto;
+        pointer-events: none; /* Mouse events pass through to keep i button hovered */
         transform: translateY(0);
       }
     }
@@ -303,7 +303,7 @@
       .info-overlay.active {
         opacity: 1;
         visibility: visible;
-        pointer-events: auto;
+        pointer-events: auto !important;
         transform: translateY(0);
       }
       .info-overlay-header {
