@@ -262,7 +262,12 @@
 
     
     @media (max-width: 768px) {
+      .vote-candidate-card {
+        position: relative !important;
+      }
       .vote-photo-wrapper {
+        position: static !important;
+        overflow: visible !important;
         height: 35vw;
         max-height: 180px;
         min-height: 120px;
@@ -273,12 +278,12 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(20, 21, 23, 0.98);
+        background: rgba(20, 21, 23, 0.99);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(223, 215, 195, 0.25);
-        border-radius: 4px;
-        padding: 10px 12px;
+        border: 1px solid rgba(223, 215, 195, 0.3);
+        border-radius: 8px;
+        padding: 8px;
         color: #e2e8f0;
         display: flex;
         flex-direction: column;
@@ -300,34 +305,32 @@
       }
       .info-overlay-header {
         display: flex !important;
-        justify-content: flex-end;
+        justify-content: space-between;
         align-items: center;
-        border-bottom: none;
-        margin-bottom: 4px;
-        padding-bottom: 0;
-        height: auto;
+        border-bottom: 1px solid rgba(223, 215, 195, 0.2);
+        padding-bottom: 4px;
+        margin-bottom: 6px;
         width: 100%;
+        height: auto;
       }
       .info-overlay-name {
-        display: none !important;
+        display: block !important;
+        font-family: 'Lora', serif;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #dfd7c3;
+        letter-spacing: 0.2px;
       }
       .info-overlay-close {
         display: block !important;
-        position: absolute !important;
-        top: 6px;
-        right: 8px;
+        position: static !important;
         font-size: 18px;
         color: #cbd5e1;
         background: none;
         border: none;
         cursor: pointer;
-        padding: 0 4px;
+        padding: 0 2px;
         line-height: 1;
-        transition: color 0.15s ease;
-        z-index: 30;
-      }
-      .info-overlay-close:hover {
-        color: #fca5a5;
       }
       .info-overlay-list {
         gap: 6px;
@@ -1204,6 +1207,10 @@ function loadNextMatchup() {
     document.getElementById("elo-b").textContent = `Elo ${Math.round(personB.elo)}`;
 
     // Populate info overlay contents
+    const infoNameA = document.getElementById("info-name-A");
+    if (infoNameA) {
+      infoNameA.textContent = isMobileDevice() ? `${personA.name} [Elo ${Math.round(personA.elo)}]` : "";
+    }
     const infoListA = document.getElementById("info-list-A");
     if (infoListA) {
       const contribsA = getContributions(personA.name);
@@ -1214,6 +1221,10 @@ function loadNextMatchup() {
       }).join("");
     }
 
+    const infoNameB = document.getElementById("info-name-B");
+    if (infoNameB) {
+      infoNameB.textContent = isMobileDevice() ? `${personB.name} [Elo ${Math.round(personB.elo)}]` : "";
+    }
     const infoListB = document.getElementById("info-list-B");
     if (infoListB) {
       const contribsB = getContributions(personB.name);
