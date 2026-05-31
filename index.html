@@ -183,12 +183,15 @@
       z-index: 25;
     }
     
-    .info-btn:hover ~ .info-overlay,
-    .info-overlay:hover {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateY(0);
+    /* Only trigger hover state on devices that support true hover */
+    @media (hover: hover) {
+      .info-btn:hover ~ .info-overlay,
+      .info-overlay:hover {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
     }
     
     .info-overlay.active {
@@ -196,6 +199,13 @@
       visibility: visible;
       pointer-events: auto;
       transform: translateY(0);
+    }
+    
+    /* Dismissed state to support clean desktop/mobile close clicks */
+    .info-overlay.dismissed {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
     }
     
     .info-overlay-header {
@@ -351,7 +361,6 @@
                       <span class="info-overlay-name" id="info-name-A">...</span>
                       <button class="info-overlay-close" onclick="closeInfo(event, 'A')" aria-label="Close panel">&times;</button>
                     </div>
-                    <div class="info-overlay-title">Top Contributions to Humanity</div>
                     <ul class="info-overlay-list" id="info-list-A">
                       <li>...</li>
                       <li>...</li>
@@ -388,7 +397,6 @@
                       <span class="info-overlay-name" id="info-name-B">...</span>
                       <button class="info-overlay-close" onclick="closeInfo(event, 'B')" aria-label="Close panel">&times;</button>
                     </div>
-                    <div class="info-overlay-title">Top Contributions to Humanity</div>
                     <ul class="info-overlay-list" id="info-list-B">
                       <li>...</li>
                       <li>...</li>
@@ -449,269 +457,269 @@
 // ============================================================================
 const MIND_CONTRIBUTIONS = {
   "Alan Turing": [
-    "Formalized the concepts of algorithm and computation with the Turing machine.",
-    "Played a pivotal role in cracking intercepted coded messages at Bletchley Park (Enigma).",
-    "Laid the foundations of artificial intelligence and cognitive science (Turing Test)."
+    "Cracked the German Enigma code at Bletchley Park, saving millions of lives in WWII.",
+    "Formalized the concepts of algorithm and modern computation with the Turing Machine.",
+    "Laid the foundations of Artificial Intelligence and cognitive science with the Turing Test."
   ],
   "Albert Einstein": [
-    "Developed the general theory of relativity, transforming our understanding of space, time, and gravity.",
-    "Explained the photoelectric effect, which helped establish quantum theory (won Nobel Prize).",
-    "Formulated the mass-energy equivalence formula E = mc²."
+    "Formulated the General Theory of Relativity, transforming our understanding of space, time, and gravity.",
+    "Taught himself college-level physics and calculus by age 12, displaying prodigious early genius.",
+    "Formulated E = mc² and explained the photoelectric effect, helping launch quantum theory."
   ],
   "Alessandro Volta": [
-    "Invented the electric battery (the voltaic pile), providing the first source of continuous electrical current.",
-    "Discovered and isolated methane gas.",
-    "Developed the concept of electrical capacitance and the electroscope."
+    "Invented the electric battery (voltaic pile), providing the first continuous source of electricity.",
+    "Discovered and isolated methane gas, pioneering modern organic chemistry research.",
+    "Developed foundational concepts of electrical potential difference, capacitance, and the electroscope."
   ],
   "Archimedes": [
-    "Formulated Archimedes' principle of buoyancy.",
-    "Created the Archimedes' screw for raising water and designed innovative war machines.",
-    "Calculated highly accurate approximations of Pi (π) and pioneered infinitesimal calculus methods."
+    "Discovered buoyancy (Archimedes' Principle), famously leaping from his bath shouting 'Eureka!'.",
+    "Calculated highly accurate Pi approximations and pioneered early infinitesimal calculus methods.",
+    "Designed legendary war machines like the Claw of Archimedes and the solar heat ray."
   ],
   "Aristotle": [
-    "Established the first systematic system of formal logic (syllogistic logic).",
-    "Pioneered the study of biology, categorizing and observing hundreds of animal species.",
-    "Developed foundational theories in metaphysics, ethics, and natural science that shaped Western philosophy for millennia."
+    "Invented formal logic (syllogistic reasoning) that dominated Western thought for 2,000 years.",
+    "Pioneered early biology, physics, ethics, and metaphysics, establishing the scientific method.",
+    "Tutored Alexander the Great, directly shaping the geopolitical landscape of the ancient world."
   ],
   "Benjamin Franklin": [
-    "Proved that lightning is electricity and invented the lightning rod.",
-    "Invented bifocal eyeglasses and the highly efficient Franklin stove.",
-    "Formulated the principle of conservation of charge and identified positive and negative charges."
+    "Proved that lightning is electricity using his kite experiment and invented the lightning rod.",
+    "Invented bifocal eyeglasses, the efficient Franklin stove, and mapped the Gulf Stream.",
+    "Co-authored and signed the US Declaration of Independence, excelling as both scientist and statesman."
   ],
   "Bernhard Riemann": [
-    "Developed Riemannian geometry, providing the mathematical framework used for Einstein's General Relativity.",
-    "Formulated the Riemann Hypothesis, one of the most important unsolved problems in mathematics.",
-    "Made fundamental contributions to complex analysis and the theory of prime numbers (Riemann zeta function)."
+    "Developed Riemannian geometry, creating the mathematical foundation used for Einstein's Relativity.",
+    "Formulated the Riemann Hypothesis, the most famous unsolved prime number puzzle in history.",
+    "Revolutionized complex analysis, mathematical physics, and prime number distribution theory."
   ],
   "Carl Friedrich Gauss": [
-    "Proved the Fundamental Theorem of Algebra.",
-    "Co-invented the electromagnetic telegraph and developed the magnetometers.",
-    "Developed the method of least squares and the Gaussian distribution (normal curve) in statistics."
+    "Mentally calculated the sum of integers 1 to 100 in seconds at age 7, shocking his teacher.",
+    "Proved the Fundamental Theorem of Algebra and formulated the normal distribution curve.",
+    "Co-invented the electromagnetic telegraph and mapped the orbits of asteroids."
   ],
   "Charles Darwin": [
-    "Formulated the theory of evolution by natural selection.",
-    "Provided comprehensive evidence for common descent in 'On the Origin of Species'.",
-    "Made major contributions to geology and the study of coral reef formation."
+    "Formulated the theory of evolution by natural selection in 'On the Origin of Species'.",
+    "Conducted massive 5-year global biological research on the HMS Beagle expedition.",
+    "Unified all biological sciences under a single framework of common evolutionary descent."
   ],
   "David Hilbert": [
-    "Formulated the influential list of 23 unsolved mathematical challenges (Hilbert's Problems).",
-    "Developed Hilbert space theory, which is foundational to quantum mechanics.",
-    "Axiomatized geometry, modernizing Euclidean geometry principles."
+    "Presented the list of 23 unsolved mathematical problems in 1900, directing 20th-century mathematics.",
+    "Created Hilbert Space theory, which is the mathematical bedrock of quantum mechanics.",
+    "Axiomatized geometry, successfully modernizing Euclid's ancient foundations."
   ],
   "Edward Teller": [
-    "Prominently co-developed the hydrogen bomb (Teller-Ulam design).",
-    "Made key contributions to chemical physics and nuclear physics (Jahn-Teller effect).",
-    "Pioneered research on nuclear reactor safety and fusion energy."
+    "Prominently co-developed the hydrogen bomb (Teller-Ulam design), mastering thermonuclear physics.",
+    "Discovered the Jahn-Teller effect in chemical physics regarding molecular electronic structure.",
+    "Pioneered research on thermonuclear fusion energy and nuclear reactor safety."
   ],
   "Elon Musk": [
-    "Revolutionized commercial space travel and aerospace engineering with SpaceX's reusable rockets.",
-    "Accelerated the global transition to sustainable energy through Tesla's electric vehicles and battery tech.",
-    "Co-founded PayPal (digital payments) and pioneered satellite internet with Starlink."
+    "Self-taught rocket science from textbooks, later designing SpaceX's reusable orbital rockets.",
+    "Accelerated the global transition to electric vehicles and sustainable power through Tesla.",
+    "Co-founded PayPal, neural engineering at Neuralink, and global satellite internet via Starlink."
   ],
   "Enrico Fermi": [
-    "Created the world's first nuclear reactor (Chicago Pile-1) and achieved the first controlled self-sustaining chain reaction.",
-    "Developed the Fermi-Dirac statistics for particles with half-integer spin (fermions).",
-    "Formulated the theory of beta decay and pioneered neutron bombardment physics."
+    "Created the world's first nuclear reactor (Chicago Pile-1), achieving the first controlled chain reaction.",
+    "Developed Fermi-Dirac statistics for half-spin quantum particles (fermions).",
+    "Had legendary mental math skills, estimating atomic blast yields using falling scraps of paper."
   ],
   "Erwin Schrödinger": [
-    "Formulated the Schrödinger equation, the fundamental equation of quantum mechanics.",
+    "Formulated the Schrödinger Equation, the fundamental wave equation of quantum mechanics.",
     "Proposed the famous 'Schrödinger's Cat' thought experiment on quantum superposition.",
     "Wrote 'What Is Life?', which inspired the discovery of the DNA double helix."
   ],
   "Erwin Schrodinger": [
-    "Formulated the Schrödinger equation, the fundamental equation of quantum mechanics.",
+    "Formulated the Schrödinger Equation, the fundamental wave equation of quantum mechanics.",
     "Proposed the famous 'Schrödinger's Cat' thought experiment on quantum superposition.",
     "Wrote 'What Is Life?', which inspired the discovery of the DNA double helix."
   ],
   "Euclid": [
-    "Wrote 'Elements', the most influential textbook in mathematical history, systematizing geometry.",
-    "Formulated Euclidean geometry axioms and theorems (e.g., infinitude of prime numbers).",
-    "Developed the Euclidean algorithm for finding the greatest common divisor of numbers."
+    "Wrote 'Elements', the most successful and translated mathematical textbook in human history.",
+    "Systematized geometry from basic axioms, proving the infinitude of prime numbers.",
+    "Invented the Euclidean Algorithm to find greatest common divisors."
   ],
   "Fritz Haber": [
-    "Invented the Haber-Bosch process for synthesizing ammonia, enabling mass-produced fertilizers that feed billions.",
-    "Pioneered the development and use of chemical weapons during WWI.",
-    "Developed the Born-Haber cycle in thermodynamics."
+    "Invented the Haber-Bosch process to synthesize ammonia, enabling fertilizers that feed 4 billion people.",
+    "Pioneered the development and application of chemical warfare in World War I.",
+    "Calculated the Born-Haber cycle to measure ionic crystal lattices."
   ],
   "Galileo Galilei": [
-    "Improved the telescope to discover Jupiter's moons, Venus's phases, and sunspots.",
-    "Formulated the law of falling bodies and the principle of inertia.",
-    "Championed heliocentrism, establishing the modern scientific method."
+    "Improved telescopes to discover Jupiter's moons, Venus's phases, and sunspots, proving heliocentrism.",
+    "Formulated the law of falling bodies and pioneered the modern scientific method.",
+    "Stood trial before the Inquisition, famously whispering 'And yet it moves'."
   ],
   "Gottfried Wilhelm Leibniz": [
-    "Independently co-invented calculus, developing the modern notation (d/dx and ∫).",
-    "Invented the binary number system, the mathematical foundation of modern computers.",
-    "Developed mechanical calculators and proposed the concept of kinetic energy conservation."
+    "Independently invented Calculus, creating the elegant modern notation (d/dx and ∫).",
+    "Invented the binary number system, the mathematical bedrock of all modern computers.",
+    "Designed advanced mechanical calculators and pioneered kinetic energy conservation."
   ],
   "Henri Poincare": [
-    "Formulated the Poincaré conjecture, a foundational theorem in topology (solved in 2003).",
-    "Pioneered chaos theory through research on the three-body problem.",
-    "Contributed key insights to the theory of special relativity (Poincaré groups)."
+    "Formulated the Poincaré Conjecture, a foundational topology puzzle unsolved for 99 years.",
+    "Discovered deterministic chaos (Chaos Theory) while solving the gravitational three-body problem.",
+    "Independently derived key insights of Special Relativity alongside Einstein."
   ],
   "Henri Poincaré": [
-    "Formulated the Poincaré conjecture, a foundational theorem in topology (solved in 2003).",
-    "Pioneered chaos theory through research on the three-body problem.",
-    "Contributed key insights to the theory of special relativity (Poincaré groups)."
+    "Formulated the Poincaré Conjecture, a foundational topology puzzle unsolved for 99 years.",
+    "Discovered deterministic chaos (Chaos Theory) while solving the gravitational three-body problem.",
+    "Independently derived key insights of Special Relativity alongside Einstein."
   ],
   "J. Robert Oppenheimer": [
-    "Directed the Manhattan Project's Los Alamos Laboratory, leading to the creation of the atomic bomb.",
-    "Pioneered theoretical astrophysics, predicting the existence of black holes and neutron stars.",
-    "Made foundational contributions to quantum mechanics (Born-Oppenheimer approximation)."
+    "Directed the Manhattan Project at Los Alamos, leading to the creation of the first atomic bomb.",
+    "Learned Sanskrit in a few months just to read the Bhagavad Gita in its original language.",
+    "Pioneered theoretical astrophysics, predicting the existence of black holes and neutron stars."
   ],
   "James Clerk Maxwell": [
-    "Formulated Maxwell's equations, unifying electricity, magnetism, and light as electromagnetism.",
-    "Developed the Maxwell-Boltzmann distribution, laying the foundation of statistical mechanics.",
-    "Created the first durable color photograph."
+    "Unified electricity, magnetism, and light into one force with Maxwell's Equations.",
+    "Created the first durable color photograph in history.",
+    "Laid the foundation of statistical thermodynamics with the Maxwell-Boltzmann distribution."
   ],
   "James Watt": [
-    "Radically improved the steam engine with the separate condenser, fueling the Industrial Revolution.",
-    "Developed the concept of horsepower and designed the centrifugal governor for speed control.",
-    "Invented the rotary motion mechanism and the pressure gauge."
+    "Radically improved the steam engine with the separate condenser, launching the Industrial Revolution.",
+    "Developed the concept of 'horsepower' to measure power output.",
+    "Invented the centrifugal governor, a crucial early automated feedback control system."
   ],
   "Johannes Kepler": [
-    "Formulated the three Laws of Planetary Motion describing elliptical orbits.",
-    "Improved the refracting telescope (Keplerian telescope design).",
-    "Made pioneering contributions to the field of optics and explained how the human eye focuses light."
+    "Discovered the three Elliptical Laws of Planetary Motion, correcting Copernicus's circular orbits.",
+    "Designed the Keplerian refracting telescope, greatly improving magnifying power.",
+    "Explained how the human eye focuses light, pioneering modern optical science."
   ],
   "John von Neumann": [
-    "Designed the von Neumann architecture, the template for almost all modern computer designs.",
-    "Founded game theory and formulated its mathematical foundations.",
-    "Made vital contributions to the Manhattan Project and the mathematical formulation of quantum mechanics."
+    "Formulated the von Neumann computer architecture, the template for almost all modern computers.",
+    "Could divide eight-digit numbers and memorize entire directories in his head at age six.",
+    "Founded Game Theory and formulated the mathematical structure of Quantum Mechanics."
   ],
   "Joseph Fourier": [
-    "Developed the Fourier series and Fourier transform, revolutionizing signal processing and mathematics.",
-    "Discovered the greenhouse effect, explaining how atmospheres retain heat.",
-    "Formulated the law of heat conduction (Fourier's law)."
+    "Invented the Fourier Transform & Fourier Series, vital to modern audio, video, and signal processing.",
+    "Discovered the atmospheric greenhouse effect, explaining how planets retain heat.",
+    "Formulated the fundamental law of heat conduction."
   ],
   "Joseph-Louis Lagrange": [
-    "Developed Lagrangian mechanics, reformulating classical mechanics using energy principles.",
-    "Contributed to the calculus of variations and the metric system.",
-    "Solved key problems in number theory and celestial mechanics (Lagrangian points)."
+    "Created Lagrangian Mechanics, reformulating Newtonian physics using kinetic and potential energy.",
+    "Solved the gravitational three-body problem points of stability (Lagrangian Points).",
+    "Pioneered the calculus of variations and co-designed the metric system."
   ],
   "Leonardo da Vinci": [
-    "Painted some of the most famous works of art in history, including the Mona Lisa and The Last Supper.",
-    "Drew highly advanced designs for flying machines, armored vehicles, and automated systems.",
-    "Conducted extremely detailed, pioneering studies of human anatomy and mechanics."
+    "Painted the Mona Lisa and The Last Supper, mastering advanced perspective and anatomy.",
+    "Sketched working designs for helicopters, tanks, and solar power 400 years before their creation.",
+    "Left thousands of pages of journals detailing scientific discoveries, geology, and anatomy."
   ],
   "Leonhard Euler": [
-    "Developed mathematical analysis, graph theory, and topology (e.g., Seven Bridges of Königsberg).",
-    "Introduced much of modern mathematical notation, including e, i, π, and f(x).",
-    "Formulated Euler's formula (e^(iπ) + 1 = 0) and pioneered fluid dynamics."
+    "Introduced modern mathematical notations, including e, i, π, and f(x).",
+    "Formulated Euler's Identity (e^(iπ) + 1 = 0), widely considered the most beautiful math formula.",
+    "Pioneered graph theory, topology, and fluid dynamics while blind in his later years."
   ],
   "Ludwig Boltzmann": [
-    "Developed the statistical explanation of the second law of thermodynamics (entropy formula S = k log W).",
-    "Formulated the Boltzmann distribution and kinetic theory of gases.",
-    "Advocated fiercely for the reality of atoms and molecules."
+    "Formulated the statistical explanation of entropy (S = k log W), explaining the flow of time.",
+    "Developed the kinetic theory of gases, proving the mathematical reality of atoms.",
+    "Co-developed the Boltzmann distribution in statistical mechanics."
   ],
   "Marie Curie": [
-    "Discovered the elements polonium and radium.",
-    "Pioneered the study of radioactivity and coined the term (won Nobel Prizes in Physics and Chemistry).",
-    "Developed mobile X-ray units to treat wounded soldiers in World War I."
+    "Discovered polonium and radium, pioneering the study of radioactivity.",
+    "Only person to win two Nobel Prizes in two different scientific fields (Physics & Chemistry).",
+    "Designed and drove mobile X-ray vehicles onto World War I battlefields to save soldiers."
   ],
   "Mark Zuckerberg": [
-    "Co-founded Facebook, completely transforming global social networking and digital communication.",
-    "Pioneered mass-scale social graph technology and targeted digital advertising models.",
-    "Driven major advancements in virtual reality (Oculus/Quest) and open-source artificial intelligence (LLaMA)."
+    "Built Facebook in his Harvard dorm, connecting over 3 billion people globally.",
+    "Wrote sophisticated music recommender software in high school coveted by Microsoft and AOL.",
+    "Championed open-source AI with the release of the LLaMA large language models."
   ],
   "Max Born": [
-    "Formulated the Born rule, giving the probability interpretation of the wave function in quantum mechanics.",
-    "Contributed to the mathematical foundation of matrix mechanics with Heisenberg.",
-    "Won the Nobel Prize for his fundamental research in quantum mechanics."
+    "Formulated the probability interpretation of the wave function (Born Rule) in quantum mechanics.",
+    "Developed matrix mechanics alongside Heisenberg, establishing quantum mathematics.",
+    "Won the Nobel Prize for his foundational work on the wave function."
   ],
   "Max Planck": [
-    "Discovered energy quanta, initiating quantum theory and introducing Planck's constant (h).",
-    "Formulated Planck's law of blackbody radiation.",
-    "Made critical contributions to thermodynamics and physical chemistry."
+    "Discovered energy quanta, launching quantum physics and introducing Planck's Constant (h).",
+    "Formulated Planck's Law of blackbody radiation.",
+    "Solved key paradoxes of thermodynamics and chemical energy."
   ],
   "Michael Faraday": [
-    "Discovered electromagnetic induction, enabling the invention of the electric generator and motor.",
-    "Discovered the laws of electrolysis and discovered benzene.",
-    "Invented the Faraday cage to block electromagnetic fields."
+    "Had no formal mathematical training but discovered electromagnetic induction, enabling electric motors.",
+    "Invented the Faraday Cage to shield electronics from electromagnetic radiation.",
+    "Discovered the laws of electrolysis and isolated benzene."
   ],
   "Neil deGrasse Tyson": [
-    "Popularized astrophysics globally through 'Cosmos: A Spacetime Odyssey' and popular science books.",
-    "Led the public reclassification of Pluto as a dwarf planet as Director of the Hayden Planetarium.",
-    "Advocated extensively for space exploration funding and scientific literacy."
+    "Popularized astrophysics worldwide, hosting 'Cosmos: A Spacetime Odyssey'.",
+    "Led the historic public reclassification of Pluto as a dwarf planet.",
+    "Communicates complex space concepts to millions, promoting scientific literacy."
   ],
   "Nicolaus Copernicus": [
-    "Formulated the heliocentric model, placing the Sun at the center of the universe.",
-    "Sparked the Copernican Revolution, the starting point of modern astronomy.",
-    "Formulated the Quantity Theory of Money (Gresham-Copernicus law)."
+    "Developed the heliocentric model of the solar system, removing Earth from the center of the universe.",
+    "Launched the Copernican Revolution, the birth of modern astronomy.",
+    "Discovered Gresham's Law of economics regarding bad money driving out good."
   ],
   "Niels Bohr": [
-    "Developed the Bohr model of the atom, introducing quantized electron orbits.",
-    "Formulated the principle of complementarity in quantum mechanics.",
-    "Played a major role in the development of quantum physics and the Manhattan Project."
+    "Invented the Bohr Model of the atom, proving that electrons travel in quantized orbits.",
+    "Formulated the Complementarity Principle, showing light behaves as both wave and particle.",
+    "Acted as a key consultant on the Manhattan Project during WWII."
   ],
   "Nikola Tesla": [
-    "Invented the alternating current (AC) electricity supply system, powering the modern world.",
-    "Developed the induction motor, the Tesla coil, and pioneered wireless transmission concepts.",
-    "Invented radio control devices and made early contributions to X-ray imaging."
+    "Invented the alternating current (AC) power system, supplying electricity to the entire modern world.",
+    "Had a photographic memory, mentally building and testing complex 3D machines down to the millimeter.",
+    "Invented the induction motor, the Tesla Coil, and pioneered wireless energy concepts."
   ],
   "Paul Dirac": [
-    "Formulated the Dirac equation, predicting the existence of antimatter (positrons).",
-    "Unified quantum mechanics and special relativity, co-founding quantum field theory.",
-    "Introduced the bra-ket notation and the Dirac delta function."
+    "Formulated the Dirac Equation, mathematically predicting the existence of antimatter.",
+    "Unified quantum mechanics and special relativity to co-create Quantum Field Theory.",
+    "Introduced the elegant bra-ket notation and the Dirac delta function."
   ],
   "Pierre-Simon Laplace": [
-    "Formulated Laplace's equation and the Laplace transform, fundamental to physics and engineering.",
-    "Proved the stability of the solar system and hypothesized the existence of black holes.",
-    "Developed the Bayesian interpretation of probability and the central limit theorem."
+    "Formulated the Laplace Transform and proved the long-term mathematical stability of the solar system.",
+    "Pioneered Bayesian probability theory and formulated the central limit theorem.",
+    "Postulated the existence of black holes and the nebular origin of solar systems."
   ],
   "Rene Descartes": [
     "Invented Cartesian geometry, bridging algebra and geometry (Cartesian coordinate system).",
-    "Established modern rationalist philosophy ('Cogito, ergo sum').",
-    "Formulated the law of refraction (Snell-Descartes law) and laws of motion."
+    "Established modern rationalist philosophy with the famous deduction 'Cogito, ergo sum'.",
+    "Formulated early laws of refraction and physical motion."
   ],
   "René Descartes": [
     "Invented Cartesian geometry, bridging algebra and geometry (Cartesian coordinate system).",
-    "Established modern rationalist philosophy ('Cogito, ergo sum').",
-    "Formulated the law of refraction (Snell-Descartes law) and laws of motion."
+    "Established modern rationalist philosophy with the famous deduction 'Cogito, ergo sum'.",
+    "Formulated early laws of refraction and physical motion."
   ],
   "Richard Feynman": [
-    "Developed quantum electrodynamics (QED), winning the Nobel Prize, and invented Feynman diagrams.",
-    "Pioneered the concept of nanotechnology and quantum computing.",
-    "Served on the Rogers Commission investigating the Space Shuttle Challenger disaster."
+    "Developed Quantum Electrodynamics (QED) and invented Feynman Diagrams.",
+    "Unlocked Manhattan Project safes at Los Alamos for fun to prove security flaws.",
+    "Pioneered the concepts of nanotechnology, quantum computing, and the Feynman learning method."
   ],
   "Robert Hooke": [
     "Formulated Hooke's Law of elasticity (F = -kx).",
-    "Coined the term 'cell' after observing plant tissues under a microscope.",
-    "Wrote 'Micrographia', the first major publication on microscopy, and designed the Gregorian telescope."
+    "Coined the word 'cell' after discovering plant cells under a microscope.",
+    "Wrote 'Micrographia', the first major work on microscopy, and co-designed the Gregorian telescope."
   ],
   "Sir George Stokes": [
-    "Formulated the Navier-Stokes equations, the fundamental equations of fluid dynamics.",
-    "Discovered and explained the phenomenon of fluorescence.",
-    "Developed Stokes' theorem in vector calculus and contributed to optics."
+    "Formulated the Navier-Stokes equations, the mathematical foundation of fluid mechanics.",
+    "Discovered and explained the physics of fluorescence.",
+    "Formulated Stokes' Theorem in vector calculus."
   ],
   "Sir Isaac Newton": [
     "Formulated the three Laws of Motion and the Universal Law of Gravitation.",
-    "Independently co-invented calculus, transforming mathematical science.",
-    "Invented the reflecting telescope and discovered the spectrum of white light."
+    "Co-invented Calculus, mapped the color spectrum, and invented the reflecting telescope.",
+    "Wrote 'Principia Mathematica', the most influential book in physics history."
   ],
   "Srinivasa Ramanujan": [
-    "Formulated thousands of groundbreaking mathematical identities in number theory, infinite series, and continued fractions.",
-    "Developed the Ramanujan prime, Ramanujan theta function, and mock theta functions.",
-    "Made extraordinary contributions to partition formulas despite having no formal training."
+    "Discovered thousands of groundbreaking math formulas with no formal training, guided by divine intuition.",
+    "Created the Ramanujan Prime, mock theta functions, and partition math theories.",
+    "Memorized and analyzed extremely complex number properties instantly (e.g. taxi cab number 1729)."
   ],
   "Stephen Hawking": [
-    "Predicted that black holes emit thermal radiation, now known as Hawking radiation.",
-    "Formulated singularity theorems in general relativity with Roger Penrose.",
-    "Wrote 'A Brief History of Time', making cosmology accessible to millions."
+    "Discovered that black holes emit thermal radiation (Hawking Radiation).",
+    "Proved gravitational singularity theorems alongside Roger Penrose.",
+    "Wrote 'A Brief History of Time', explaining cosmology to millions of readers."
   ],
   "Thomas Edison": [
-    "Invented the phonograph, creating the first audio recording and playback device.",
-    "Developed the practical incandescent light bulb and established the first commercial electric power utility.",
-    "Pioneered industrial research laboratories and invented the motion picture camera (Kinetoscope)."
+    "Invented the phonograph, creating the first audio recording and playback technology.",
+    "Developed the practical incandescent light bulb and built the first commercial electrical grid.",
+    "Holds 1,093 US patents, pioneering industrial research laboratories."
   ],
   "Werner Heisenberg": [
-    "Formulated the Uncertainty Principle, a cornerstone of quantum mechanics.",
-    "Created matrix mechanics, the first complete formulation of quantum mechanics.",
-    "Led the German nuclear weapon project during World War II."
+    "Formulated the Uncertainty Principle, a cornerstone of quantum physics.",
+    "Developed matrix mechanics, the first complete mathematical formulation of quantum mechanics.",
+    "Directed the German nuclear energy project during WWII."
   ],
   "Wolfgang Pauli": [
-    "Formulated the Pauli Exclusion Principle, explaining the structure of atoms and chemical bonding.",
-    "Proposed the existence of the neutrino particle to explain energy conservation in beta decay.",
-    "Contributed to quantum spin theory (Pauli matrices) and quantum field theory."
+    "Formulated the Pauli Exclusion Principle, explaining chemical bonding and atomic structures.",
+    "Mathematically predicted the existence of the neutrino particle to save conservation of energy laws.",
+    "Developed the Pauli spin matrices in quantum mechanics."
   ]
 };
 
@@ -740,10 +748,14 @@ function toggleInfo(event, cardType) {
   event.stopPropagation();
   const overlay = document.getElementById(`info-overlay-${cardType}`);
   if (overlay) {
+    overlay.classList.remove("dismissed");
+    
     // Close other overlay first
     const otherType = cardType === 'A' ? 'B' : 'A';
     const otherOverlay = document.getElementById(`info-overlay-${otherType}`);
-    if (otherOverlay) otherOverlay.classList.remove("active");
+    if (otherOverlay) {
+      otherOverlay.classList.remove("active");
+    }
     
     overlay.classList.toggle("active");
   }
@@ -754,6 +766,7 @@ function closeInfo(event, cardType) {
   const overlay = document.getElementById(`info-overlay-${cardType}`);
   if (overlay) {
     overlay.classList.remove("active");
+    overlay.classList.add("dismissed");
   }
 }
 
@@ -762,6 +775,7 @@ function clearActiveInfo(cardType) {
   const overlay = document.getElementById(`info-overlay-${cardType}`);
   if (overlay) {
     overlay.classList.remove("active");
+    overlay.classList.remove("dismissed");
   }
 }
 
@@ -1054,11 +1068,17 @@ function loadNextMatchup() {
   document.getElementById("vote-game-container").style.display = "block";
   document.getElementById("no-photos").style.display = "none";
 
-  // Close active overlays on new matchup loading
+  // Close active overlays and clear dismissals on new matchup loading
   const overlayA = document.getElementById("info-overlay-A");
   const overlayB = document.getElementById("info-overlay-B");
-  if (overlayA) overlayA.classList.remove("active");
-  if (overlayB) overlayB.classList.remove("active");
+  if (overlayA) {
+    overlayA.classList.remove("active");
+    overlayA.classList.remove("dismissed");
+  }
+  if (overlayB) {
+    overlayB.classList.remove("active");
+    overlayB.classList.remove("dismissed");
+  }
 
   // Select two random distinct minds
   let indexA = Math.floor(Math.random() * minds.length);
