@@ -32,6 +32,11 @@ async function querySupabase(endpoint, method = "GET", body = null) {
     throw new Error(`Supabase REST error (${response.status}): ${errorText}`);
   }
 
+  // Handle 204 No Content for PATCH requests
+  if (response.status === 204) {
+    return null;
+  }
+
   return await response.json();
 }
 

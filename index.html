@@ -441,8 +441,9 @@
     <!-- Header -->
     <div id="header">
       <h1>Who Is Smartest</h1>
+      <div id="db-status-badge" style="display: none; font-size: 11px; margin-top: 6px; padding: 4px 10px; border-radius: 20px; font-weight: 600; border: 1px solid transparent; letter-spacing: 0.5px; text-transform: uppercase; font-family: 'Fira Code', monospace; display: inline-block;"></div>
       <div id="header-nav"
-        style="display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; align-items: center;">
+        style="display: flex; justify-content: center; gap: 36px; flex-wrap: wrap; align-items: center; margin-top: 14px;">
         <a onclick="switchTab('vote')" id="nav-vote" class="active">Vote</a>
         <a onclick="switchTab('leaderboard')" id="nav-leaderboard">Leaderboard</a>
         <a onclick="switchTab('about')" id="nav-about">About</a>
@@ -983,9 +984,13 @@
           minds = await response.json();
           isSharedDb = true;
 
-          // Hiding status badge per request
+          // Show Connected State
           if (badge) {
-            badge.style.display = "none";
+            badge.textContent = "🟢 Global DB Synced";
+            badge.style.background = "rgba(74, 222, 128, 0.08)";
+            badge.style.color = "#86efac";
+            badge.style.borderColor = "rgba(74, 222, 128, 0.25)";
+            badge.style.display = "inline-block";
           }
         } catch (error) {
           console.warn("Could not connect to shared database. Falling back to local browser storage:", error);
@@ -994,9 +999,13 @@
           isSharedDb = false;
           loadFromLocalStorage();
 
-          // Hiding status badge per request
+          // Show Offline Fallback State
           if (badge) {
-            badge.style.display = "none";
+            badge.textContent = "⚠️ Offline Local Sandbox";
+            badge.style.background = "rgba(234, 179, 8, 0.08)";
+            badge.style.color = "#fef08a";
+            badge.style.borderColor = "rgba(234, 179, 8, 0.25)";
+            badge.style.display = "inline-block";
           }
         }
       }
@@ -1016,7 +1025,11 @@
             isSharedDb = true; // Auto-reconnect to global database!
             const badge = document.getElementById("db-status-badge");
             if (badge) {
-              badge.style.display = "none";
+              badge.textContent = "🟢 Global DB Synced";
+              badge.style.background = "rgba(74, 222, 128, 0.08)";
+              badge.style.color = "#86efac";
+              badge.style.borderColor = "rgba(74, 222, 128, 0.25)";
+              badge.style.display = "inline-block";
             }
           }
         } catch (e) {
@@ -1820,6 +1833,15 @@
             const latest = await response.json();
             isSharedDb = true; // Auto-reconnect to global database!
             
+            const badge = document.getElementById("db-status-badge");
+            if (badge) {
+              badge.textContent = "🟢 Global DB Synced";
+              badge.style.background = "rgba(74, 222, 128, 0.08)";
+              badge.style.color = "#86efac";
+              badge.style.borderColor = "rgba(74, 222, 128, 0.25)";
+              badge.style.display = "inline-block";
+            }
+
             // Silently update state only if database ratings actually changed
             if (JSON.stringify(latest) !== JSON.stringify(minds)) {
               minds = latest;
