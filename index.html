@@ -991,13 +991,9 @@
           minds = await response.json();
           isSharedDb = true;
 
-          // Show Connected State
+          // Hide badge on successful connection
           if (badge) {
-            badge.textContent = "🟢 Global DB Synced";
-            badge.style.background = "rgba(74, 222, 128, 0.08)";
-            badge.style.color = "#86efac";
-            badge.style.borderColor = "rgba(74, 222, 128, 0.25)";
-            badge.style.display = "inline-block";
+            badge.style.display = "none";
           }
         } catch (error) {
           console.warn("Could not connect to shared database. Falling back to local browser storage:", error);
@@ -1032,11 +1028,7 @@
             isSharedDb = true; // Auto-reconnect to global database!
             const badge = document.getElementById("db-status-badge");
             if (badge) {
-              badge.textContent = "🟢 Global DB Synced";
-              badge.style.background = "rgba(74, 222, 128, 0.08)";
-              badge.style.color = "#86efac";
-              badge.style.borderColor = "rgba(74, 222, 128, 0.25)";
-              badge.style.display = "inline-block";
+              badge.style.display = "none";
             }
           }
         } catch (e) {
@@ -1842,11 +1834,7 @@
             
             const badge = document.getElementById("db-status-badge");
             if (badge) {
-              badge.textContent = "🟢 Global DB Synced";
-              badge.style.background = "rgba(74, 222, 128, 0.08)";
-              badge.style.color = "#86efac";
-              badge.style.borderColor = "rgba(74, 222, 128, 0.25)";
-              badge.style.display = "inline-block";
+              badge.style.display = "none";
             }
 
             // Silently update state only if database ratings actually changed
