@@ -962,18 +962,7 @@
       if (isIsolated) {
         console.log("Using Isolated Local Storage Mode (Local Sandbox active)");
         isSharedDb = false;
-
-        const saved = localStorage.getItem("whoissmartest_minds");
-        if (saved) {
-          try {
-            minds = JSON.parse(saved);
-          } catch (e) {
-            console.error("Failed to parse local storage minds, loading defaults", e);
-            loadLocalDefaults();
-          }
-        } else {
-          loadLocalDefaults();
-        }
+        loadFromLocalStorage();
 
         // Update premium UI badge to show Isolated Local Storage state if it exists
         if (badge) {
@@ -985,8 +974,8 @@
         }
       } else {
         try {
-          // Attempt to fetch from Vercel Serverless Function
-          const response = await fetch("/api/minds");
+          // Attempt to fetch from Vercel Serverless Function with cache buster
+          const response = await fetch(`/api/minds?t=${Date.now()}`);
           if (!response.ok) {
             throw new Error(`API returned ${response.status}`);
           }
@@ -1003,17 +992,7 @@
 
           // Fallback: load from browser's local storage
           isSharedDb = false;
-          const saved = localStorage.getItem("whoissmartest_minds");
-          if (saved) {
-            try {
-              minds = JSON.parse(saved);
-            } catch (e) {
-              console.error("Failed to parse local storage minds, loading defaults", e);
-              loadLocalDefaults();
-            }
-          } else {
-            loadLocalDefaults();
-          }
+          loadFromLocalStorage();
 
           // Hiding status badge per request
           if (badge) {
@@ -1024,6 +1003,26 @@
 
       preloadAllMindsImages();
       loadNextMatchup();
+    }
+
+    // Fetch latest minds from API if connected to Shared DB or trying to re-establish connection
+    async function syncDatabase() {
+      const isIsolated = localStorage.getItem("whoissmartest_isolated") === "true";
+      if (!isIsolated) {
+        try {
+          const response = await fetch(`/api/minds?t=${Date.now()}`);
+          if (response.ok) {
+            minds = await response.json();
+            isSharedDb = true; // Auto-reconnect to global database!
+            const badge = document.getElementById("db-status-badge");
+            if (badge) {
+              badge.style.display = "none";
+            }
+          }
+        } catch (e) {
+          console.warn("Database sync failed:", e);
+        }
+      }
     }
 
     // Preload all candidate images in the background so they are ready in browser memory instantly
@@ -1053,6 +1052,40 @@
     function saveToStorage() {
       if (!isSharedDb) {
         localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
+      }
+    }
+
+    // Load minds from LocalStorage with self-healing upgrades for stale files
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem("whoissmartest_minds");
+      if (saved) {
+        try {
+          minds = JSON.parse(saved);
+          if (minds.length < DEFAULT_MINDS.length) {
+            const existingNames = new Set(minds.map(m => m.name.toLowerCase().trim()));
+            const missingMinds = DEFAULT_MINDS.filter(m => !existingNames.has(m.name.toLowerCase().trim()));
+            if (missingMinds.length > 0) {
+              const nextId = minds.reduce((max, p) => p.id > max ? p.id : max, 0) + 1;
+              missingMinds.forEach((m, idx) => {
+                minds.push({
+                  id: nextId + idx,
+                  name: m.name,
+                  photo_path: m.photo_path,
+                  elo: 1400.0,
+                  wins: 0,
+                  losses: 0
+                });
+              });
+              localStorage.setItem("whoissmartest_minds", JSON.stringify(minds));
+              console.log("Self-healed local storage database: appended missing default minds");
+            }
+          }
+        } catch (e) {
+          console.error("Failed to parse local storage minds, loading defaults", e);
+          loadLocalDefaults();
+        }
+      } else {
+        loadLocalDefaults();
       }
     }
 
@@ -1144,11 +1177,11 @@
     // ============================================================================
     // Tab Navigation
     // ============================================================================
-    function switchTab(tabName) {
+    async function switchTab(tabName) {
       playChalkSound('tap');
       cancelSpeech();
 
-      // Update tabs active state
+      // Update tabs active state instantly for optimal responsiveness
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('#header-nav a').forEach(el => el.classList.remove('active'));
 
@@ -1158,8 +1191,15 @@
       // Trigger tab-specific load/renders
       if (tabName === 'vote') {
         loadNextMatchup();
+        const oldMindsJson = JSON.stringify(minds);
+        await syncDatabase();
+        if (JSON.stringify(minds) !== oldMindsJson) {
+          loadNextMatchup();
+        }
       } else if (tabName === 'leaderboard') {
         document.getElementById("search-input").value = "";
+        renderLeaderboard();
+        await syncDatabase();
         renderLeaderboard();
       } else if (tabName === 'admin') {
         renderAdminPanel();
@@ -1266,7 +1306,7 @@
 
     // Mobile Selection Helpers
     function isMobileDevice() {
-      return window.matchMedia("(max-width: 768px)").matches || ('ontouchstart' in window);
+      return window.matchMedia("(max-width: 768px)").matches;
     }
 
     let selectedChoice = null;
@@ -1772,11 +1812,14 @@
 
     // Silent Background Sync (polls every 4 seconds when tab is active to update rankings in real-time)
     setInterval(async () => {
-      if (isSharedDb && document.visibilityState === "visible") {
+      const isIsolated = localStorage.getItem("whoissmartest_isolated") === "true";
+      if (!isIsolated && document.visibilityState === "visible") {
         try {
-          const response = await fetch("/api/minds");
+          const response = await fetch(`/api/minds?t=${Date.now()}`);
           if (response.ok) {
             const latest = await response.json();
+            isSharedDb = true; // Auto-reconnect to global database!
+            
             // Silently update state only if database ratings actually changed
             if (JSON.stringify(latest) !== JSON.stringify(minds)) {
               minds = latest;
