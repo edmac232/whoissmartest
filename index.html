@@ -978,7 +978,14 @@
           // Attempt to fetch from Vercel Serverless Function with cache buster
           const response = await fetch(`/api/minds?t=${Date.now()}`);
           if (!response.ok) {
-            throw new Error(`API returned ${response.status}`);
+            let errMsg = `API returned ${response.status}`;
+            try {
+              const errJson = await response.json();
+              if (errJson && errJson.error) {
+                errMsg = errJson.error;
+              }
+            } catch (_) {}
+            throw new Error(errMsg);
           }
 
           minds = await response.json();
@@ -999,9 +1006,9 @@
           isSharedDb = false;
           loadFromLocalStorage();
 
-          // Show Offline Fallback State
+          // Show Offline Fallback State with diagnostic detail
           if (badge) {
-            badge.textContent = "⚠️ Offline Local Sandbox";
+            badge.textContent = `⚠️ Offline Local Sandbox (${error.message || 'Supabase Disconnected'})`;
             badge.style.background = "rgba(234, 179, 8, 0.08)";
             badge.style.color = "#fef08a";
             badge.style.borderColor = "rgba(234, 179, 8, 0.25)";
