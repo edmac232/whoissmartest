@@ -1,0 +1,6 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/(vote|leaderboard|about)", "destination": "/index.html" }
+  ]
+}

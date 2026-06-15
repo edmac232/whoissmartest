@@ -4,7 +4,7 @@ const K = 32;
 
 async function querySupabase(endpoint, method = "GET", body = null) {
   const url = `${process.env.SUPABASE_URL}/rest/v1/${endpoint}`;
-  const apiKey = process.env.SUPABASE_ANON_KEY;
+  const apiKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!url || !apiKey) {
     return null;
@@ -55,10 +55,10 @@ export default async function handler(req, res) {
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    return res.status(500).json({ error: "Supabase environment variables are not set on Vercel." });
+    return res.status(500).json({ error: "Supabase environment variables (SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY) are not set on Vercel." });
   }
 
   try {

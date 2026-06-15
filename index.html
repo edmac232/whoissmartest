@@ -1016,7 +1016,7 @@
       }
 
       preloadAllMindsImages();
-      loadNextMatchup();
+      handleInitialRoute();
     }
 
     // Fetch latest minds from API if connected to Shared DB or trying to re-establish connection
@@ -1191,16 +1191,32 @@
     // ============================================================================
     // Tab Navigation
     // ============================================================================
-    async function switchTab(tabName) {
+    async function switchTab(tabName, pushToHistory = true) {
       playChalkSound('tap');
       cancelSpeech();
+
+      const validTabs = ['vote', 'leaderboard', 'about'];
+      if (!validTabs.includes(tabName)) {
+        tabName = 'vote';
+      }
 
       // Update tabs active state instantly for optimal responsiveness
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('#header-nav a').forEach(el => el.classList.remove('active'));
 
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-      document.getElementById(`nav-${tabName}`).classList.add('active');
+      const tabContent = document.getElementById(`tab-${tabName}`);
+      if (tabContent) tabContent.classList.add('active');
+
+      const navLink = document.getElementById(`nav-${tabName}`);
+      if (navLink) navLink.classList.add('active');
+
+      // Update URL pathway if requested
+      if (pushToHistory) {
+        const path = tabName === 'vote' ? '/' : '/' + tabName;
+        if (window.location.pathname !== path) {
+          window.history.pushState({ tab: tabName }, '', path);
+        }
+      }
 
       // Trigger tab-specific load/renders
       if (tabName === 'vote') {
@@ -1211,7 +1227,8 @@
           loadNextMatchup();
         }
       } else if (tabName === 'leaderboard') {
-        document.getElementById("search-input").value = "";
+        const searchInput = document.getElementById("search-input");
+        if (searchInput) searchInput.value = "";
         renderLeaderboard();
         await syncDatabase();
         renderLeaderboard();
@@ -1219,6 +1236,31 @@
         renderAdminPanel();
       }
     }
+
+    // Parse route path on load to switch to correct tab
+    function handleInitialRoute() {
+      const path = window.location.pathname.replace(/^\/|\/$/g, '');
+      if (['vote', 'leaderboard', 'about'].includes(path)) {
+        switchTab(path, false);
+      } else {
+        switchTab('vote', false);
+      }
+    }
+
+    // Listen to popstate to handle back/forward navigation
+    window.addEventListener('popstate', (event) => {
+      const state = event.state;
+      if (state && state.tab) {
+        switchTab(state.tab, false);
+      } else {
+        const path = window.location.pathname.replace(/^\/|\/$/g, '');
+        if (['vote', 'leaderboard', 'about'].includes(path)) {
+          switchTab(path, false);
+        } else {
+          switchTab('vote', false);
+        }
+      }
+    });
 
     // ============================================================================
     // Voting Page Logic
